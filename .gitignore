@@ -1,0 +1,14 @@
+# 인텔리제이
+/shelf/
+/workspace.xml
+.idea/
+
+# OS
+.DS_Store
+
+# Env
+.env
+
+# Gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
