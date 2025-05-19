@@ -26,8 +26,6 @@ public class Memo extends DateEntity {
     private IsChecked isChecked = IsChecked.UNCHECKED; // 기본값 설정
 
     // modifiedAt, CreatedAt 필드는 DataEntity에 존재
-
-    // Hibernate가 자동으로 DB방언에 맞추어 SMALLINT로 설정
     // 0: 논리적 삭제, 1: 공개
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
