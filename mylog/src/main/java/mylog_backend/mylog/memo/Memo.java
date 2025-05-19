@@ -41,5 +41,16 @@ public class Memo extends DateEntity {
 
 
 
+    //--메모 관련 메서드--//
+    /**
+     * 1. 메모 체크시 논리적 삭제
+     */
+    public void checkedMemo() {
+        this.isChecked = IsChecked.CHECKED;
+        this.isVisible = IsVisible.HIDDEN;
+    }
+
+
+
 
 }
