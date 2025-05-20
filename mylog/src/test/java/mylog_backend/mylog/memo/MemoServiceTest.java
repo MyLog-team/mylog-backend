@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
@@ -45,8 +48,71 @@ public class MemoServiceTest {
         assertThat(savedMemo.getIsChecked()).isEqualTo(IsChecked.UNCHECKED);
         assertThat(savedMemo.getIsVisible()).isEqualTo(IsVisible.VISIBLE);
 
+    }
 
 
+    @Test
+    @DisplayName("메모 체크시 논리적 삭제가 이루어져 보이지 않는다.")
+    void checkedMemo() {
+        // given
+        Memo memo = Memo.builder()
+                .memoContent("음~메모~")
+                .build();
+
+        Memo savedMemo = memoRepository.save(memo);
+
+
+        // when
+        MemoResponse memoResponse = memoService.checkedMemo(savedMemo.getId());
+
+
+        // then
+        Memo updatedMemo = memoRepository.findById(savedMemo.getId())
+                .orElseThrow(() -> new IllegalArgumentException("메모를 찾을 수 없습니다."));
+
+        assertThat(updatedMemo.getIsChecked()).isEqualTo(IsChecked.CHECKED);
+        assertThat(updatedMemo.getIsVisible()).isEqualTo(IsVisible.HIDDEN);
+
+    }
+
+
+    @Test
+    @DisplayName("메모 목록 조회 기능 - IsVisible.HIDDEN인 데이터는 보이지 않는다.")
+    void getVisibleMemos() {
+        // given
+        Memo visibleMemo1 = Memo.builder()
+                .memoContent("음~메모")
+                .isVisible(IsVisible.VISIBLE)
+                .build();
+
+        Memo visibleMemo2 = Memo.builder()
+                .memoContent("음메음메송아지")
+                .isVisible(IsVisible.VISIBLE)
+                .build();
+
+        Memo hiddenMemo1 = Memo.builder()
+                .memoContent("숨겨져야하는 메모")
+                .isVisible(IsVisible.HIDDEN)
+                .build();
+
+        Memo hiddenMemo2 = Memo.builder()
+                .memoContent("비밀내용이지렁")
+                .isVisible(IsVisible.HIDDEN)
+                .build();
+
+
+        memoRepository.save(visibleMemo1);
+        memoRepository.save(visibleMemo2);
+
+        memoRepository.save(hiddenMemo1);
+        memoRepository.save(hiddenMemo2);
+
+
+        // when
+        List<MemoResponse> visibleMemos = memoService.getVisibleMemos();
+
+        // then
+        assertThat(visibleMemos).hasSize(2);
 
     }
 
