@@ -17,7 +17,8 @@ public class Memo extends DateEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String memoContent;
 
     @Enumerated(EnumType.STRING) // ENUM 타입을 String으로 지정

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequiredArgsConstructor
+@RestController // API 요청을 처리하기 위한 컨트롤러
 public class MemoController {
 
     private final MemoService memoService;
@@ -40,6 +41,15 @@ public class MemoController {
     public ResponseEntity<List<MemoResponse>> getVisibleMemos() {
         List<MemoResponse> memos = memoService.getVisibleMemos();
         return ResponseEntity.ok(memos);
+    }
+
+    /**
+     * 단일 메모 조회 기능
+     */
+    @GetMapping("/memos/{memoId}")
+    public ResponseEntity<MemoResponse> getMemo(@PathVariable Long memoId) {
+        MemoResponse response = memoService.getMemo(memoId);
+        return ResponseEntity.ok(response);
     }
 
 }

@@ -14,7 +14,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDate;
 
 @EntityListeners(value = {AuditingEntityListener.class})
-
 @Getter
 @MappedSuperclass
 public abstract class DateEntity {
