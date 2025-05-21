@@ -22,14 +22,14 @@ public class Memo extends DateEntity {
     private String memoContent;
 
     @Enumerated(EnumType.STRING) // ENUM 타입을 String으로 지정
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(10)")
     @Builder.Default
     private IsChecked isChecked = IsChecked.UNCHECKED; // 기본값 설정
 
     // modifiedAt, CreatedAt 필드는 DataEntity에 존재
     // 0: 논리적 삭제, 1: 공개
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(10)")
     @Builder.Default
     private IsVisible isVisible = IsVisible.VISIBLE;
 
