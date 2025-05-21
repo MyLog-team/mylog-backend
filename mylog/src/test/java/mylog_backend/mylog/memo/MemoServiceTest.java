@@ -1,6 +1,7 @@
 package mylog_backend.mylog.memo;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,6 +115,37 @@ public class MemoServiceTest {
         // then
         assertThat(visibleMemos).hasSize(2);
 
+    }
+
+
+    @Test
+    @DisplayName("단일 메모 조회 테스트")
+    void getMemo() {
+
+        // given
+        Memo memo = Memo.builder()
+                .memoContent("음~메모~")
+                .isVisible(IsVisible.VISIBLE)
+                .build();
+
+        Memo savedMemo = memoRepository.save(memo);
+
+        // when
+        MemoResponse response = memoService.getMemo(savedMemo.getId());
+
+
+        // then
+        assertThat(response.getMemoId()).isEqualTo(savedMemo.getId());
+        assertThat(response.getMemoContent()).isEqualTo("음~메모~");
+        assertThat(response.getIsVisible()).isEqualTo(IsVisible.VISIBLE);
+
+    }
+
+
+    @Test
+    @DisplayName("존재하지 않는 메모 조회시 예외가 발생한다.")
+    void getNotExistMemo() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> memoService.getMemo(111L));
     }
 
 

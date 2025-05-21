@@ -13,13 +13,15 @@ public class MemoResponse {
     private IsChecked isChecked;
     private IsVisible isVisible;
 
+    private String memoContent;
+
     @Builder
-    public MemoResponse(String message, Long memoId, IsVisible isVisible, IsChecked isChecked) {
+    public MemoResponse(String message, Long memoId, IsVisible isVisible, IsChecked isChecked, String memoContent) {
         this.memoId = memoId;
         this.message = message;
         this.isVisible = isVisible;
         this.isChecked = isChecked;
-    }
+        this.memoContent = memoContent;    }
 
 
     /**
@@ -47,6 +49,17 @@ public class MemoResponse {
                 .message(message)
                 .memoId(memoId)
                 .isChecked(isChecked)
+                .build();
+    }
+
+
+    // 단일 메모 조회에 이용되는 메서드
+    public static MemoResponse toMemo(String message, Long memoId, String memoContent, IsVisible isVisible) {
+        return MemoResponse.builder()
+                .memoId(memoId)
+                .message(message)
+                .memoContent(memoContent)
+                .isVisible(isVisible)
                 .build();
     }
 }

@@ -52,6 +52,28 @@ public class MemoService {
     }
 
 
+    /**
+     * 단일 메모 조회 메서드
+     * @param memoId
+     * @return
+     */
+    public MemoResponse getMemo(Long memoId) {
+        Memo memo = memoRepository.findById(memoId)
+                .orElseThrow(()-> new IllegalArgumentException("메모를 찾을 수 없습니다."));
+
+        if (memo.getIsVisible() == IsVisible.HIDDEN) {
+            throw new IllegalArgumentException("이전에 체크되어 조회할 수 없는 메모입니다.");
+        }
+
+        return MemoResponse.builder()
+                .message("단일 메모 조회 성공")
+                .memoId(memo.getId())
+                .isVisible(memo.getIsVisible())
+                .memoContent(memo.getMemoContent())
+                .isChecked(memo.getIsChecked())
+                .build();
+    }
+
 
 
 }
