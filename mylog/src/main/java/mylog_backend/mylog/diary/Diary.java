@@ -26,11 +26,11 @@ public class Diary extends DateEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String dairyContent;
 
-    @Column(nullable = true)
+    @Column(nullable = true, columnDefinition = "VARCHAR(10)")
     @Enumerated(EnumType.STRING)
     private Feeling feeling;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(10)")
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private IsPublic isPublic = IsPublic.PRIVATE;
