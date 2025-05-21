@@ -31,9 +31,9 @@ public class MemoResponse {
      * 2. 메모 조회 성공
      * 3. 메모 목록 조회 성공
      *
-     * @param message
-     * @param memoId
-     * @return
+     * @param message : 로직 성공시 띄울 메시지
+     * @param memoId : 생성된/저장된 메모의 아이디
+     * @return : 응답 DTO 틀을 이용하여 값을 할당후 반환
      */
     public static MemoResponse of(String message, Long memoId) {
         return MemoResponse.builder()
