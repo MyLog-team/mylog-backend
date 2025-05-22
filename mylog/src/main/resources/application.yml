@@ -44,3 +44,18 @@ spring:
       on-profile: prod
   jpa:
     show-sql: false
+
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+  api-docs:
+    path: /v3/api-docs
+  info:
+    title: MyLog Swagger UI
+    description: API docs for MyLog project
+    version: 1.0.0
+
+jwt:
+  secret-key : ${JWT_SECRET_KEY}
