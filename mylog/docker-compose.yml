@@ -45,6 +45,7 @@ services:
       - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
 
 volumes:
   postgres_data:
