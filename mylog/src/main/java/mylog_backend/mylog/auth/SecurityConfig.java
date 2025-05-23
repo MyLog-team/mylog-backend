@@ -23,6 +23,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/auth/**",  // 🔑 회원가입, 로그인 등은 인증 없이 허용
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",

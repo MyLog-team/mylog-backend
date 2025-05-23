@@ -1,5 +1,7 @@
 package mylog_backend.mylog.auth;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "인증", description = "회원가입, 로그인, 로그아웃 관련 API")
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
@@ -25,6 +28,7 @@ public class AuthController {
      * @param request : 회원가입 요청
      * @return : 성공 확인
      */
+    @Operation(summary = "회원가입", description = "회원가입을 할 수 있습니다.")
     @PostMapping("/auth/signup")
     private ResponseEntity<Void> singup(@RequestBody @Valid SignupRequest request) {
         userService.signup(request);
@@ -37,10 +41,11 @@ public class AuthController {
      * @param request
      * @return
      */
-    @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody @Valid LoginRequest request) {
-        userService.login(request);
-        return ResponseEntity.ok().build();
+    @Operation(summary = "로그인", description = "로그인시 토큰을 받습니다.")
+    @PostMapping("/auth/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
+        LoginResponse response = userService.login(request);
+        return ResponseEntity.ok(response);
     }
 
 
@@ -49,6 +54,7 @@ public class AuthController {
      * @param request
      * @return
      */
+    @Operation(summary = "로그아웃", description = "로그아웃을 할 시 토큰이 반납됩니다.")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         // 헤더에서 토큰을 꺼냄

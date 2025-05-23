@@ -1,13 +1,17 @@
 package mylog_backend.mylog.diary;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
+@Schema(description = "일기 API 요청후 응답으로 나온 결과물을 담는 DTO입니다.")
 @Getter
 public class DiaryResponse {
 
+    @Schema(description = "성공시 메시지와 함께 결과물이 반환됩니다.", example = "일기 요청 성공")
     private String message;
 
+    @Schema(description = "db에 저장되어있는 일기의 아이디입니다.", example = "123")
     private Long diaryId;
 
     /**
