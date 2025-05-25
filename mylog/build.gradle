@@ -63,6 +63,9 @@ dependencies {
 	// JVM 환경 변수 세팅
 	implementation 'io.github.cdimascio:dotenv-java:2.2.4'
 
+	// Java에서 JSON 파싱 및 생성에 사용
+	implementation 'org.json:json:20231013'
+
 
 }
 

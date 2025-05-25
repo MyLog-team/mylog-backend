@@ -59,3 +59,6 @@ springdoc:
 
 jwt:
   secret-key : ${JWT_SECRET_KEY}
+
+youtube:
+  api-key: ${YOUTUBE_API_KEY}
