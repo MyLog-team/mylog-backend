@@ -6,9 +6,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mylog_backend.mylog.user.UserService;
-import mylog_backend.mylog.util.JwtUtil;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
-    private final JwtUtil jwtUtil;
+//    private final UserService userService;
     private final JwtService jwtService;
+    private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
 
     /**
@@ -31,7 +31,7 @@ public class AuthController {
     @Operation(summary = "회원가입", description = "회원가입을 할 수 있습니다.")
     @PostMapping("/auth/signup")
     private ResponseEntity<Void> singup(@RequestBody @Valid SignupRequest request) {
-        userService.signup(request);
+        jwtService.signup(request);
         return ResponseEntity.ok().build();
     }
 
@@ -44,7 +44,7 @@ public class AuthController {
     @Operation(summary = "로그인", description = "로그인시 토큰을 받습니다.")
     @PostMapping("/auth/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
-        LoginResponse response = userService.login(request);
+        LoginResponse response = jwtService.login(request);
         return ResponseEntity.ok(response);
     }
 
@@ -55,7 +55,7 @@ public class AuthController {
      * @return
      */
     @Operation(summary = "로그아웃", description = "로그아웃을 할 시 토큰이 반납됩니다.")
-    @PostMapping("/logout")
+    @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         // 헤더에서 토큰을 꺼냄
         String token = jwtUtil.resolveToken(request);
@@ -68,6 +68,16 @@ public class AuthController {
         }
         jwtService.logout(token);
         return ResponseEntity.ok("로그아웃 되었습니다.");
+    }
+
+
+    /**
+     * 테스트에 쓸 보호된 리소스 예시
+     * @return
+     */
+    @GetMapping("/auth/protected-resource") // ⭐ 경로를 /auth/protected-resource로 만듭니다. ⭐
+    public ResponseEntity<String> getProtectedResource() {
+        return ResponseEntity.ok("보호된 리소스에 접근 성공!");
     }
 
 
