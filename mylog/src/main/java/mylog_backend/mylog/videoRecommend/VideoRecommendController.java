@@ -14,7 +14,7 @@ public class VideoRecommendController {
     private final VideoRecommendService videoRecommendService;
 
     /**
-     * 동영상 추천 API
+     * 1. 동영상 추천 API
      * @param userId : 사용자 아이디
      * @param request : 사용자에게 분위기를 입력받음
      * @return : 생성완료

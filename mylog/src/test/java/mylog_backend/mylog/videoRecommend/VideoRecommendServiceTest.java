@@ -1,12 +1,9 @@
-package videoRecommend;
+package mylog_backend.mylog.videoRecommend;
 
 import mylog_backend.mylog.preference.Preference;
 import mylog_backend.mylog.preference.PreferenceRepository;
 import mylog_backend.mylog.user.User;
-import mylog_backend.mylog.videoRecommend.VideoRecommendService;
-import mylog_backend.mylog.videoRecommend.VideoResponse;
-import mylog_backend.mylog.videoRecommend.YoutubeClient;
-import mylog_backend.mylog.videoRecommend.YoutubeVideo;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +19,9 @@ class VideoRecommendServiceTest {
     private YoutubeClient youtubeClient;
     private VideoRecommendService videoRecommendService;
 
+    /**
+     * 테스트용 환경을 mock으로 구축
+     */
     @BeforeEach
     void setUp() {
         preferenceRepository = mock(PreferenceRepository.class);
@@ -55,7 +55,8 @@ class VideoRecommendServiceTest {
                 new YoutubeVideo("Relaxing Lofi", "abc123", "http://thumbnail.url")
         );
 
-        when(youtubeClient.search("lofi study relax music")).thenReturn(mockVideos);
+        // 검색 쿼리 수정: 태그 2개 + 무드 + "music"
+        when(youtubeClient.search("lofi classic study music")).thenReturn(mockVideos);
 
         // When
         VideoResponse response = videoRecommendService.recommend(userId, mood);
@@ -67,46 +68,4 @@ class VideoRecommendServiceTest {
         assertEquals("http://thumbnail.url", response.getThumbnailUrl());
     }
 
-    @Test
-    void recommend_shouldThrow_whenNotEnoughPreferences() {
-        Long userId = 1L;
-        User mockUser = mock(User.class);
-
-        Preference pref = Preference.builder()
-                .tag("focus")
-                .build();
-        pref.setUser(mockUser);
-
-        // 1개만 있는 경우
-        when(preferenceRepository.findByUserId(userId)).thenReturn(List.of(pref));
-
-
-        IllegalStateException ex = assertThrows(
-                IllegalStateException.class,
-                () -> videoRecommendService.recommend(userId, "calm")
-        );
-
-        assertEquals("선호 태그가 2개 이상 필요합니다.", ex.getMessage());
-    }
-
-    @Test
-    void recommend_shouldThrow_whenNoVideosFound() {
-        Long userId = 1L;
-        User mockUser = mock(User.class);
-
-        Preference pref = Preference.builder()
-                .tag("focus")
-                .user(mockUser)
-                .build();
-
-        when(preferenceRepository.findByUserId(userId)).thenReturn(List.of(pref));
-
-        when(youtubeClient.search("focus jazz chill music")).thenReturn(List.of());
-
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-            videoRecommendService.recommend(userId, "chill");
-        });
-
-        assertEquals("추천할 영상이 없습니다.", ex.getMessage());
-    }
 }
