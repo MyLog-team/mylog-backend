@@ -4,6 +4,8 @@ import mylog_backend.mylog.preference.Preference;
 import mylog_backend.mylog.preference.PreferenceRepository;
 import mylog_backend.mylog.preference.PreferenceRequest;
 import mylog_backend.mylog.preference.PreferenceService;
+import mylog_backend.mylog.user.User;
+import mylog_backend.mylog.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +27,27 @@ public class PreferenceServiceTest {
     @Autowired
     private PreferenceRepository preferenceRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
-    @DisplayName("선호도 태그 저장 테스트")
+    @DisplayName("유저 선호도 태그 저장 테스트")
     void savePreferences() {
         // given
+        User user = User.builder()
+                .loginId("testuser")
+                .userName("테스트유저")
+                .password("password")
+                .build();
+        userRepository.save(user);
+
         PreferenceRequest request = PreferenceRequest.builder()
                 .tag1("운동")
                 .tag2("독서")
                 .build();
 
         // when
-        preferenceService.savePreferences(request);
+        preferenceService.savePreferences(user.getId(), request);
 
         // then
         List<Preference> savedPreferences = preferenceRepository.findAll();

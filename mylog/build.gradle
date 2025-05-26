@@ -63,6 +63,22 @@ dependencies {
 	// JVM 환경 변수 세팅
 	implementation 'io.github.cdimascio:dotenv-java:2.2.4'
 
+	// Java에서 JSON 파싱 및 생성에 사용
+	implementation 'org.json:json:20231013'
+	
+	testImplementation('it.ozimov:embedded-redis:0.7.3') {
+		exclude group: 'org.slf4j', module: 'slf4j-simple'
+		exclude group: 'commons-logging', module: 'commons-logging' // 혹시 모를 충돌 방지
+	}
+
+	// 전체 프로젝트에서 충돌 나는 로깅 라이브러리 제외 (이중 체크)
+	configurations {
+		all {
+			exclude group: 'org.slf4j', module: 'slf4j-simple'
+			exclude group: 'commons-logging', module: 'commons-logging'
+		}
+	}
+
 
 }
 

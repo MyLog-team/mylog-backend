@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mylog_backend.mylog.user.User;
 
 @Entity
 @Getter
@@ -24,5 +25,17 @@ public class Preference {
         this.tag = tag;
     }
 
+    /** 1.
+     *
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-}
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+
+    }
+

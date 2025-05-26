@@ -2,6 +2,10 @@ package mylog_backend.mylog.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import mylog_backend.mylog.preference.Preference;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -38,6 +42,21 @@ public class User {
 
     @Column
     private String providerId;
+
+
+    // 연관관계
+
+    /** 1. 회원 -> 취향 태그
+     * 회원 : 태그 = 1:N
+     */
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    @Builder.Default
+    private List<Preference> preferences = new ArrayList<>();
+    // 취향 추가 메서드
+    public void addPreference(Preference preference) {
+        preferences.add(preference); // 취향 추가 메서드
+        preference.setUser(this); // 회원을 세팅해줌
+    }
 
 
 }
