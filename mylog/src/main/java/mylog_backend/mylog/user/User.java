@@ -49,7 +49,7 @@ public class User {
     /** 1. 회원 -> 취향 태그
      * 회원 : 태그 = 1:N
      */
-    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
     @Builder.Default
     private List<Preference> preferences = new ArrayList<>();
     // 취향 추가 메서드

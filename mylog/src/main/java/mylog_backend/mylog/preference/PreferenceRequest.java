@@ -4,6 +4,7 @@ package mylog_backend.mylog.preference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import mylog_backend.mylog.user.User;
 
 import java.util.List;
 
@@ -24,10 +25,10 @@ public class PreferenceRequest {
         this.tag2 = tag2;
     }
 
-    public List<Preference> toPreferences() {
+    public List<Preference> toPreferences(User user) {
         return List.of(
-                Preference.builder().tag(tag1).build(),
-                Preference.builder().tag(tag2).build()
+                Preference.builder().tag(tag1).user(user).build(),
+                Preference.builder().tag(tag2).user(user).build()
         );
     }
 

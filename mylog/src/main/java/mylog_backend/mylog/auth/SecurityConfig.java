@@ -49,11 +49,15 @@ public class SecurityConfig {
                         // 특정 API에 대해서는 모든 요청을 허가합니다.
                         // requestMatchers에 여러 인자를 전달할 때 varargs를 사용합니다.
                         .requestMatchers(
-                                "/auth/**",  // 회원가입, 로그인 등 인증 없이 허용
-                                "/swagger-ui/**", // Swagger UI
-                                "/v3/api-docs/**", // API 문서
+                                // 회원가입, 로그인 등 인증 없이 허용
+                                "/auth/**",
+                                // Swagger 관련 경로
                                 "/swagger-resources/**",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
                         ).permitAll()
                         // 그 외 모든 요청에 대해서는 인증을 필요로 합니다.
                         .anyRequest().authenticated())

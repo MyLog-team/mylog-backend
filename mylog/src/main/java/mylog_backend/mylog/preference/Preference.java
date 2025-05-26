@@ -14,15 +14,16 @@ import mylog_backend.mylog.user.User;
 public class Preference {
 
     @Id @GeneratedValue
-    private Long id;
+    private Integer id;
 
     @Column(nullable = false)
     private String tag;
 
     // 생성자, getter, setter, builder 등
     @Builder
-    public Preference(String tag) {
+    public Preference(String tag, User user) {
         this.tag = tag;
+        this.user = user;
     }
 
     /** 1.

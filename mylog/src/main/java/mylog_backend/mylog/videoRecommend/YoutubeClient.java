@@ -1,8 +1,10 @@
 package mylog_backend.mylog.videoRecommend;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -11,7 +13,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 @RequiredArgsConstructor
 // Client : 무언가에 요청을 보내는 주체를 의미
 
@@ -20,11 +21,18 @@ import java.util.List;
 // 즉, 애플리케이션이 유튜브 API에 요청을 보낼때와 응답을 받고 파싱하는 일을 담당함
 public class YoutubeClient {
 
-    private final YoutubeProperties youtubeProperties;
+    @Value("${youtube.api-key}")
+    private String apiKey;
 
     // 스프링에서 제공하는 HTTP 통신용 클라이언트 객체
     // 외부 API 서버에 GET, POST 요청을 보내고 응답을 받게 해준다.
     private final RestTemplate restTemplate = new RestTemplate();
+
+
+    @Builder
+    public YoutubeClient(String apiKey) {
+        this.apiKey = apiKey;
+    }
 
 
     /**
@@ -42,7 +50,7 @@ public class YoutubeClient {
                 .queryParam("q", keyword) // 실제 검색 키워드
                 .queryParam("type", "video") // 데이터를 필터링, 여기선 비디오만 응답에 포함
                 .queryParam("maxResults", 5)  // 영상을 최대 5개까지 가져옴
-                .queryParam("key", youtubeProperties.getApiKey()) // API 키를 가져옴
+                .queryParam("key", apiKey) // API 키를 가져옴
                 .build()
                 .toUriString(); // 앞선 쿼리 파라미터들을 최종 URL 문자열로 변환
 
@@ -62,7 +70,7 @@ public class YoutubeClient {
             String title = snippet.getString("title"); // 제목
             String thumbnailUrl = snippet.getJSONObject("thumbnails").getJSONObject("default").getString("url"); // 썸네일
 
-            videos.add(new YoutubeVideo(videoId, title, thumbnailUrl));
+            videos.add(new YoutubeVideo(title, videoId, thumbnailUrl));
         }
 
         return videos;

@@ -21,11 +21,7 @@ public class PreferenceService {
                 .orElseThrow(() -> new EntityNotFoundException("사용자 엔티티를 찾을 수 없습니다."));
 
 
-        List<Preference> preferences = request.toPreferences();
-
-        for (Preference preference: preferences) {
-            preference.setUser(user);
-        }
+        List<Preference> preferences = request.toPreferences(user);
 
         preferenceRepository.saveAll(preferences);
 
