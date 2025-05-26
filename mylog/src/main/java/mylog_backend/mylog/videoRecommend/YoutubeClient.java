@@ -1,5 +1,6 @@
 package mylog_backend.mylog.videoRecommend;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,7 +13,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 @RequiredArgsConstructor
 // Client : 무언가에 요청을 보내는 주체를 의미
 
@@ -27,6 +27,12 @@ public class YoutubeClient {
     // 스프링에서 제공하는 HTTP 통신용 클라이언트 객체
     // 외부 API 서버에 GET, POST 요청을 보내고 응답을 받게 해준다.
     private final RestTemplate restTemplate = new RestTemplate();
+
+
+    @Builder
+    public YoutubeClient(String apiKey) {
+        this.apiKey = apiKey;
+    }
 
 
     /**

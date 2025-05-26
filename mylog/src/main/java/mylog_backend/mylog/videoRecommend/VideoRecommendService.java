@@ -14,7 +14,7 @@ public class VideoRecommendService {
 
     // 선호 태그 레포지토리
     private final PreferenceRepository preferenceRepository;
-    //
+    // 유튜브 클라이언트
     private final YoutubeClient youtubeClient;
 
     public VideoResponse recommend(Long userId, String mood) {

@@ -24,6 +24,16 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
+
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        String path = httpRequest.getRequestURI();
+
+        // swagger 관련 경로는 필터 패스 (인증 검사 안 함)
+        if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         // 1. Request Header에서 JWT 토큰 추출
         String token = resolveToken((HttpServletRequest) request);
         // 2. validateToken으로 토큰 유효성 검사
