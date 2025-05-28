@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class PreferenceServiceTest {
 
     @Test
     @DisplayName("유저 선호도 태그 저장 테스트")
+    @Transactional
     void savePreferences() {
         // given
         User user = User.builder()

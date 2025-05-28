@@ -23,11 +23,11 @@ public class Preference {
     @Builder
     public Preference(String tag, User user) {
         this.tag = tag;
-        this.user = user;
+        user.addPreference(this); // Preference에서 연관관계를 맺도록 강제
     }
 
-    /** 1.
-     *
+    /** 1. 사용자 <- 선호 태그
+     * 단방향 연관관계, 선호 태그는 사용자만 구분하면 된다.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
