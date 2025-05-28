@@ -2,6 +2,7 @@ package mylog_backend.mylog.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import mylog_backend.mylog.diary.Diary;
 import mylog_backend.mylog.memo.Memo;
 import mylog_backend.mylog.preference.Preference;
 
@@ -90,4 +91,30 @@ public class User {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("해당 메모가 없습니다."));
     }
+
+
+    /**
+     * 3. 일기 <-> 사용자
+     * 회원 : 일기 = 1:N
+     */
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Diary> diaries = new ArrayList<>();
+    // 일기 생성 메서드
+    public void addDiary(Diary diary) {
+        diary.setUser(this);
+        diaries.add(diary);
+    }
+    // 메모 목록 조회 메서드
+    public List<Diary> getDiaries() {
+        return diaries;
+    }
+    // 단일 메모 조회 메서드
+    public Memo getDiary(Long diaryId) {
+        return memos.stream()
+                .filter(m -> m.getId().equals(diaryId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 메모가 없습니다."));
+    }
+
+
 }

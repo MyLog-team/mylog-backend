@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 import mylog_backend.mylog.common.domain.DateEntity;
+import mylog_backend.mylog.user.User;
 
 @Entity
 @Getter
@@ -44,14 +45,28 @@ public class Diary extends DateEntity {
 
     // created_at, modified_at 필드는 DateEntity에 존재
 
-    // 생성자
-//    public Diary(String dairyTitle, String dairyContent, Feeling feeling, byte feelingScore, IsPublic isPublic) {
-//        this.dairyTitle = dairyTitle;
-//        this.dairyContent = dairyContent;
-//        this.feeling = feeling;
-//        this.feelingScore = feelingScore;
-//        this.isPublic = isPublic;
-//    }
+//     생성자
+    public Diary(String dairyTitle, String dairyContent, Feeling feeling, Integer feelingScore, IsPublic isPublic) {
+        this.dairyTitle = dairyTitle;
+        this.dairyContent = dairyContent;
+        this.feeling = feeling;
+        this.feelingScore = feelingScore;
+        this.isPublic = isPublic;
+    }
+
+
+    /**
+     * 사용자 <-> 메모
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    // 사용자 세팅
+    public void setUser(User user) {
+        this.user = user;
+    }
+
 
 
 }
