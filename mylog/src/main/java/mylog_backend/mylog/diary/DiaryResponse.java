@@ -3,6 +3,7 @@ package mylog_backend.mylog.diary;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import mylog_backend.mylog.memo.MemoResponse;
 
 @Schema(description = "일기 API 요청후 응답으로 나온 결과물을 담는 DTO입니다.")
 @Getter
@@ -14,6 +15,23 @@ public class DiaryResponse {
     @Schema(description = "db에 저장되어있는 일기의 아이디입니다.", example = "123")
     private Long diaryId;
 
+    @Schema(description = "일기 내용")
+    private String dairyContent;
+
+    @Schema(description = "일기 제목")
+    private String dairyTitle;
+
+    @Schema(description = "공개 여부")
+    private IsPublic isPublic;
+
+    @Schema(description = "감정")
+    private Feeling feeling;
+
+    @Schema(description = "감정 점수")
+    private Integer feelingScore;
+
+
+
     /**
      * 일기 응답 DTO 생성자
      * 일기 관련 로직후 이용됨
@@ -22,10 +40,43 @@ public class DiaryResponse {
      * @param diaryId
      */
     @Builder
-    public DiaryResponse(String message, Long diaryId) {
+    public DiaryResponse(String message, Long diaryId, String dairyTitle,
+                         String dairyContent, Feeling feeling,
+                         IsPublic isPublic, Integer feelingScore) {
         this.diaryId = diaryId;
         this.message = message;
+        this.dairyContent = dairyContent;
+        this.dairyTitle = dairyTitle;
+        this.isPublic = isPublic;
+        this.feeling = feeling;
+        this.feelingScore = feelingScore;
         // 이후 응답DTO가 사용되는 형태에 따라서 필드 추가 가능
+    }
+
+
+    /**
+     * 일기 단건/목록 조회시 사용
+     * @param message
+     * @param diaryId
+     * @param dairyTitle
+     * @param dairyContent
+     * @param feeling
+     * @param isPublic
+     * @param feelingScore
+     * @return
+     */
+    public static DiaryResponse toDiary(String message, Long diaryId, String dairyTitle,
+                                        String dairyContent, Feeling feeling,
+                                        IsPublic isPublic, Integer feelingScore) {
+        return DiaryResponse.builder()
+                .message(message)
+                .diaryId(diaryId)
+                .dairyTitle(dairyTitle)
+                .dairyContent(dairyContent)
+                .isPublic(isPublic)
+                .feeling(feeling)
+                .feelingScore(feelingScore)
+                .build();
     }
 
 
@@ -41,5 +92,6 @@ public class DiaryResponse {
                 .diaryId(diaryId)
                 .build();
     }
+
 
 }
