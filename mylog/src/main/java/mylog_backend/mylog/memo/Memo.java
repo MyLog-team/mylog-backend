@@ -3,6 +3,7 @@ package mylog_backend.mylog.memo;
 import jakarta.persistence.*;
 import lombok.*;
 import mylog_backend.mylog.common.domain.DateEntity;
+import mylog_backend.mylog.user.User;
 
 @Entity
 @Getter
@@ -39,6 +40,18 @@ public class Memo extends DateEntity {
         this.isChecked = isChecked;
         this.isVisible = isVisible;
     }
+
+    /**
+     * 1. 사용자 <-> 메모
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+    // 사용자 세팅 메서드
+    public void setUser(User user) {
+        this.user = user;
+    }
+
 
 
 

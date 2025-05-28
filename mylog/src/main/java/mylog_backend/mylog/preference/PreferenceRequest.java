@@ -19,12 +19,26 @@ public class PreferenceRequest {
     private String tag2;
 
 
+    /**
+     * 선호 태그 요청 DTO
+     * @param tag1
+     * @param tag2
+     * 태그는 2개만 받는다.
+     */
     @Builder
     public PreferenceRequest(String tag1, String tag2) {
         this.tag1 = tag1;
         this.tag2 = tag2;
     }
 
+    /**
+     * Preference 엔티티로 변환하는 메서드
+     * @param user : 사용자 객체를 매개값으로 받아서
+     * @return : .user()로 사용자를 세팅후, tag들도 할당
+     * Preference 생성자에서 태그를 1개밖에 할당하지 않기에 코드를 2줄 사용해서 값을 할당함
+     *
+     * Note. user 객체는 2번 할당되지만, 해당 코드에선 영속성이 보장되기 때문에 같은 사용자 객체가 사용된다.
+     */
     public List<Preference> toPreferences(User user) {
         return List.of(
                 Preference.builder().tag(tag1).user(user).build(),

@@ -64,6 +64,21 @@ public class GlobalExceptionHandler {
 
 
     /**
+     * 본인이 생성한 데이터가 아닌데 접근을 시도할때 처리
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, String>> handleUnauthorizedException(UnauthorizedException e) {
+        log.warn("권한 없는 접근 시도: {}", e.getMessage());
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Unauthorized");
+        errorResponse.put("message", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);  // 401 상태코드
+    }
+
+
+    /**
      *  일반적인 RuntimeException을 처리하는 핸들러 (최하단에 위치)
      * @param e
      * @return
@@ -76,6 +91,9 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+
+
 }
 
 

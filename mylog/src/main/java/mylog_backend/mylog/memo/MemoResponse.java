@@ -37,7 +37,6 @@ public class MemoResponse {
      * 사용하는 곳
      * 1. 메모 생성 성공
      * 2. 메모 조회 성공
-     * 3. 메모 목록 조회 성공
      *
      * @param message : 로직 성공시 띄울 메시지
      * @param memoId : 생성된/저장된 메모의 아이디
@@ -61,7 +60,7 @@ public class MemoResponse {
     }
 
 
-    // 단일 메모 조회에 이용되는 메서드
+    // 여러/단일 메모 조회에 이용되는 메서드
     public static MemoResponse toMemo(String message, Long memoId, String memoContent, IsVisible isVisible) {
         return MemoResponse.builder()
                 .memoId(memoId)
