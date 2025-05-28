@@ -12,9 +12,10 @@ public interface MemoRepository extends JpaRepository<Memo, Long> {
 
     /**
      * isVisible = VISIBLE인 메모만 필터링
+     * 메모를 생성한 유저가 맞는지 판별하기 위해 매개변수 추가
      * @param isVisible
      * @return
      */
-    List<Memo> findByIsVisible(IsVisible isVisible);
+    List<Memo> findByUserIdAndIsVisible(Long userId, IsVisible isVisible);
 
 }
