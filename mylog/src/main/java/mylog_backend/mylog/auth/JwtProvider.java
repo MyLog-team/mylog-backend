@@ -45,11 +45,21 @@ public class JwtProvider {
                 .map(SimpleGrantedAuthority::new)
                 .toList();
 
+
         // UserPrincipal 생성 (password는 빈 문자열)
         Long id = Long.parseLong(claims.get("id").toString());
         String username = claims.getSubject();  // 일반적으로 이메일 또는 유저네임
 
         UserPrincipal principal = new UserPrincipal(id, username, "", authorities);
+
+        // "id"를 String으로 꺼내서 Long 변환
+        String idStr = claims.get("id", String.class);
+        Long userId = idStr != null ? Long.valueOf(idStr) : null;
+
+        // UserDetails 객체를 만들어서 Authentication return
+        // UserDetails: interface, User: UserDetails를 구현한 class
+        UserPrincipal userPrincipal = new UserPrincipal(userId, claims.getSubject(), "", authorities);
+
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
