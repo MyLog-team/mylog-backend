@@ -80,6 +80,7 @@ public class JwtUtil {
         String accessToken = Jwts.builder()
                 .setSubject(String.valueOf(userId))
                 .claim("auth", authorities)
+                .claim("id", String.valueOf(userId))
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
