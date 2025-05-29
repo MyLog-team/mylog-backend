@@ -1,9 +1,11 @@
 package mylog_backend.mylog.auth;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -12,7 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import org.springframework.security.config.http.SessionCreationPolicy;
-
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 
 @Configuration
@@ -45,26 +47,26 @@ public class SecurityConfig {
                 // JWT를 사용하기 때문에 세션을 사용하지 않습니다.
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        // 특정 API에 대해서는 모든 요청을 허가합니다.
-                        // requestMatchers에 여러 인자를 전달할 때 varargs를 사용합니다.
-                        .requestMatchers(
-                                // 회원가입, 로그인 등 인증 없이 허용
-                                "/auth/**",
-                                // Swagger 관련 경로
-                                "/swagger-resources/**",
-                                "/webjars/**",
-                                "/v3/api-docs/**",
-                                "/v3/api-docs",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
-                        // 그 외 모든 요청에 대해서는 인증을 필요로 합니다.
-                        .anyRequest().authenticated())
-                // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
-                .addFilterBefore(jwtAuthenticationFilter(),
-                        UsernamePasswordAuthenticationFilter.class
-                );
+                .authorizeHttpRequests(authorizeHttpRequests ->
+                        authorizeHttpRequests
+                                // 1. 정적 리소스 (JS, CSS, 이미지 등) 및 webjars (스웨거 UI 리소스 포함) 접근 허용
+                                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                                // 2. 인증/회원가입 등 인증 없이 허용할 API 경로
+                                .requestMatchers("/auth/**").permitAll() // '/auth/'로 시작하는 요청 모두 접근 허가 (기존에 '/api/auth/**'였다면 맞춰주세요)
+                                // 3. OpenApi(Swagger) 문서 경로 명시적 허용 (PathRequest에 포함되지 않는 경우 대비)
+                                .requestMatchers("/v3/api-docs/**").permitAll()
+                                // 4. Swagger UI 관련 경로 명시적 허용
+                                .requestMatchers("/swagger-ui/**").permitAll()
+                                .requestMatchers("/swagger-ui.html").permitAll() // swagger-ui.html 직접 접근 시
+                                // 5. 조회 API는 비로그인 유저도 접근 가능 (예시)
+                                .requestMatchers(HttpMethod.GET, "/api/post/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
+
+                                .anyRequest().authenticated() // 그 외 모든 요청 인증 처리
+                )
+                // JWT 인증을 위한 필터 추가 (UsernamePasswordAuthenticationFilter 이전에 실행)
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

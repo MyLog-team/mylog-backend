@@ -11,10 +11,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Value("${spring.data.redis.host:localhost}")
+    @Value("${SPRING_REDIS_HOST}")
     private String host;
 
-    @Value("${spring.data.redis.port:6379}")
+    @Value("${SPRING_REDIS_PORT}")
     private int port;
 
     // (선택사항) Redis 비밀번호가 있다면 추가

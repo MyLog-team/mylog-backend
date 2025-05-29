@@ -10,50 +10,90 @@ import java.io.IOException;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 @RequiredArgsConstructor
+@Slf4j // ⚠️ 로그 추가를 위해 추가
 public class JwtAuthenticationFilter extends GenericFilterBean {
     private final JwtProvider jwtTokenProvider;
     private final RedisTemplate<String, String> redisTemplate;
+
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    private static final String[] SWAGGER_PATHS = {
+            "/auth/**",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/v3/api-docs/**",
+            "/v3/api-docs",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String path = httpRequest.getRequestURI();
+        String requestURI = httpRequest.getRequestURI();
 
-        // swagger 관련 경로는 필터 패스 (인증 검사 안 함)
-        if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")) {
-            chain.doFilter(request, response);
-            return;
+        // 스웨거 관련 경로는 필터 패스 (인증 검사 안 함)
+        for (String swaggerPath : SWAGGER_PATHS) {
+            if (pathMatcher.match(swaggerPath, requestURI)) {
+                log.debug("Skipping JWT filter for public path: {}", requestURI); // ⚠️ 로그 추가
+                chain.doFilter(request, response);
+                return; // 필터 체인 중단 후 다음으로 넘김
+            }
         }
 
         // 1. Request Header에서 JWT 토큰 추출
-        String token = resolveToken((HttpServletRequest) request);
-        // 2. validateToken으로 토큰 유효성 검사
-        if (token != null && jwtTokenProvider.validateToken(token)) {
+        String token = resolveToken(httpRequest); // HttpServletRequest로 캐스팅된 변수 사용
 
-            // ✅ 블랙리스트 검사 추가
-            String isLogout = redisTemplate.opsForValue().get(token);
-            if (isLogout != null && isLogout.equals("logout")) {
-                // 로그아웃된 토큰이면 401 Unauthorized 응답 보내고 필터 종료
-                HttpServletResponse httpResponse = (HttpServletResponse) response;
-                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return; // 필터 체인 중단
+        // 2. 토큰이 존재하고 유효한지 검사
+        if (token != null) { // ⚠️ 토큰이 null이 아닌 경우에만 유효성 검사 시도
+            if (jwtTokenProvider.validateToken(token)) {
+                // ✅ 블랙리스트 검사 추가
+                String isLogout = redisTemplate.opsForValue().get(token);
+                if (isLogout != null && isLogout.equals("logout")) {
+                    log.warn("Attempt to use blacklisted token: {}", token); // ⚠️ 로그 추가
+                    HttpServletResponse httpResponse = (HttpServletResponse) response;
+                    httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
+                    httpResponse.getWriter().write("Logout token detected. Please log in again."); // ⚠️ 응답 메시지 추가
+                    return; // 필터 체인 중단
+                }
+
+                // 토큰이 유효하고 블랙리스트에 없으면 Authentication 객체를 SecurityContext에 저장
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+
+                // ✅ 여기서 principal 타입 확인 로그 추가
+                Object principal = authentication.getPrincipal();
+                log.info("🔍 principal class: {}", principal != null ? principal.getClass().getName() : "null");
+                log.info("🔍 principal value: {}", principal);
+
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("Authentication set for URI: {}", requestURI); // ⚠️ 로그 추가
+
+            } else {
+                // 토큰은 존재하지만 유효하지 않은 경우 (만료, 변조 등)
+                log.warn("Invalid or expired JWT token for URI: {}", requestURI); // ⚠️ 로그 추가
+                // 여기서 굳이 401을 바로 보낼 필요는 없음. Spring Security가 이후 처리 (AuthenticationEntryPoint)
             }
-
-            // 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext에 저장
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-//            chain.doFilter(request, response);
+        } else {
+            // 토큰이 아예 없는 경우 (인증이 필요하지만 토큰이 없는 요청)
+            log.debug("No JWT token found for URI: {}", requestURI); // ⚠️ 로그 추가
+            // 여기서도 굳이 401을 바로 보낼 필요는 없음. Spring Security가 이후 처리 (AuthenticationEntryPoint)
         }
-        // 에러 핸들링 필요
+
+        // 인증 여부와 관계없이 다음 필터 또는 서블릿으로 요청을 넘김
+        // SecurityContextHolder에 Authentication이 설정되어 있으면 인증된 것으로 처리되고,
+        // 없으면 익명(anonymous)으로 처리되거나 인증 실패로 처리됨.
         chain.doFilter(request, response);
     }
 

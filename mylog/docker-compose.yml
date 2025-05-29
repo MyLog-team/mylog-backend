@@ -25,6 +25,13 @@ services:
     image: "redis:latest"
     ports:
       - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ] # Redis 서버가 응답하는지 확인
+      interval: 1s # 1초마다 체크
+      timeout: 3s # 3초 내에 응답 없으면 실패
+      retries: 30 # 최대 30번 (30초) 재시도
+      start_period: 5s # 컨테이너 시작 후 5초 동안은 헬스 체크 실패해도 무시
+      # --- 여기까지 추가/수정 ---
 
   application:
     build: .
@@ -32,9 +39,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
-      - rabbitmq
-      - redis
+      postgres:
+        condition: service_started # postgres는 기본적으로 시작만 되면 됨
+      rabbitmq:
+        condition: service_started # rabbitmq도 시작만 되면 됨
+      redis:
+        condition: service_healthy # ★ Redis가 'healthy' 상태가 될 때까지 기다림
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}

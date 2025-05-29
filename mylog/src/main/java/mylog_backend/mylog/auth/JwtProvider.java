@@ -7,29 +7,23 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
+import java.util.Arrays;
+import java.util.Collection;
 
 @Slf4j
 @Component
-//@RequiredArgsConstructor
-
 public class JwtProvider {
+
     private final Key key;
 
     // application.yml에서 secret 값 가져와서 key에 저장
@@ -40,25 +34,26 @@ public class JwtProvider {
 
     // Jwt 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
     public Authentication getAuthentication(String accessToken) {
-        // Jwt 토큰 복호화
         Claims claims = parseClaims(accessToken);
 
-        if (claims.get("auth") == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+        if (claims.get("auth") == null || claims.get("id") == null) {
+            throw new RuntimeException("토큰에 필요한 정보가 없습니다.");
         }
 
-        // 클레임에서 권한 정보 가져오기
+        // 권한 정보 가져오기
         Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("auth").toString().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .toList();
 
-        // UserDetails 객체를 만들어서 Authentication return
-        // UserDetails: interface, User: UserDetails를 구현한 class
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        // UserPrincipal 생성 (password는 빈 문자열)
+        Long id = Long.parseLong(claims.get("id").toString());
+        String username = claims.getSubject();  // 일반적으로 이메일 또는 유저네임
+
+        UserPrincipal principal = new UserPrincipal(id, username, "", authorities);
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
-    // 토큰 정보를 검증하는 메서드
+    // 토큰 유효성 검증
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -78,8 +73,7 @@ public class JwtProvider {
         return false;
     }
 
-
-    // accessToken
+    // JWT에서 Claims 추출
     private Claims parseClaims(String accessToken) {
         try {
             return Jwts.parserBuilder()
@@ -88,7 +82,7 @@ public class JwtProvider {
                     .parseClaimsJws(accessToken)
                     .getBody();
         } catch (ExpiredJwtException e) {
-            return e.getClaims();
+            return e.getClaims(); // 만료된 경우에도 claims는 사용
         }
     }
 }
