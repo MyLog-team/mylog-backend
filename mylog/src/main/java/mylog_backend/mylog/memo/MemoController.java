@@ -65,7 +65,7 @@ public class MemoController {
     @Operation(summary = "단일 메모 조회", description = "메모를 하나씩 조회합니다.")
     @GetMapping("/memos/{memoId}")
     public ResponseEntity<MemoResponse> getMemo(@PathVariable Long memoId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        MemoResponse response = memoService.getMemo(memoId, userPrincipal.getId());
+        MemoResponse response = memoService.getMemo(userPrincipal.getId(), memoId);
         return ResponseEntity.ok(response);
     }
 
