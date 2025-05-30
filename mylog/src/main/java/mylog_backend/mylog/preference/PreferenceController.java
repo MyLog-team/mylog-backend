@@ -27,13 +27,13 @@ public class PreferenceController {
      */
     @Operation(summary = "선호 태그 입력",description = "사용자 선호 태그를 받아낸다.")
     @PostMapping("/preferences")
-    public ResponseEntity<Void> savePreferences(@RequestBody PreferenceRequest request,
+    public ResponseEntity<PreferenceResponse> savePreferences(@RequestBody PreferenceRequest request,
                                                 @AuthenticationPrincipal UserPrincipal userPrincipal) {
         // 인증된 사용자의 id를 할당
         Long userId = userPrincipal.getId();
 
         // 아이디와 요청을 이용하여 선호 태그 저장 메서드 호출
-        preferenceService.savePreferences(userId, request);
-        return ResponseEntity.ok().build();
+        PreferenceResponse response =  preferenceService.savePreferences(userId, request);
+        return ResponseEntity.ok(response);
     }
 }
