@@ -1,10 +1,12 @@
 package mylog_backend.mylog.memo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+@JsonInclude(JsonInclude.Include.NON_NULL) // response body에서 null값인 필드는 제외됨
 @Schema(description = "메모 관련 요청 처리후 결과물을 담는 응답 DTO입니다.")
 @Getter
 public class MemoResponse {
