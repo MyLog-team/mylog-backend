@@ -1,8 +1,10 @@
 package mylog_backend.mylog.preference;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "사용자 선호 응답 DTO")
 public class PreferenceResponse {
 
