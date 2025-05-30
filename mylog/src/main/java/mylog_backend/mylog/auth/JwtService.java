@@ -32,15 +32,21 @@ public class JwtService {
      * @param request
      */
     @Transactional
-    public void signup(SignupRequest request) {
+    public SignupResponse signup(SignupRequest request) {
+
         // 중복 로그인 아이디 확인
         if (userRepository.findByLoginId(request.getLoginId()).isPresent()) {
             throw new DuplicateLoginIdException("이미 사용 중인 아이디입니다: " + request.getLoginId());
         }
 
+        // 사용자를 DB에 저장
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         User user = request.toUser(encodedPassword);
-        userRepository.save(user);
+
+        // DB에 저장된 사용자를 다시 꺼내옴
+        User savedUser =  userRepository.save(user);
+
+        return SignupResponse.of("회원가입되었습니다.", savedUser.getId());
     }
 
 
