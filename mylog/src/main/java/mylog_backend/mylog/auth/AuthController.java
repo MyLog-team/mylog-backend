@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mylog_backend.mylog.user.UserService;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,9 +31,11 @@ public class AuthController {
      */
     @Operation(summary = "회원가입", description = "회원가입을 할 수 있습니다.")
     @PostMapping("/auth/signup")
-    private ResponseEntity<Void> singup(@RequestBody @Valid SignupRequest request) {
-        jwtService.signup(request);
-        return ResponseEntity.ok().build();
+    private ResponseEntity<SignupResponse> signup(@RequestBody @Valid SignupRequest request) {
+
+        SignupResponse response = jwtService.signup(request);
+
+        return ResponseEntity.ok(response);
     }
 
 
@@ -68,16 +71,6 @@ public class AuthController {
         }
         jwtService.logout(token);
         return ResponseEntity.ok("로그아웃 되었습니다.");
-    }
-
-
-    /**
-     * 테스트에 쓸 보호된 리소스 예시
-     * @return
-     */
-    @GetMapping("/auth/protected-resource") // ⭐ 경로를 /auth/protected-resource로 만듭니다. ⭐
-    public ResponseEntity<String> getProtectedResource() {
-        return ResponseEntity.ok("보호된 리소스에 접근 성공!");
     }
 
 
