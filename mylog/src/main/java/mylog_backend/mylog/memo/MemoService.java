@@ -76,7 +76,8 @@ public class MemoService {
                         "메모 목록 조회 성공", // 메시지 (필요에 따라 변경 가능)
                         memo.getId(),
                         memo.getMemoContent(),
-                        memo.getIsVisible()))
+                        memo.getIsVisible(),
+                        memo.getIsChecked()))
                 .collect(Collectors.toList());
     }
 
