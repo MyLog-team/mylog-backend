@@ -63,12 +63,13 @@ public class MemoResponse {
 
 
     // 여러/단일 메모 조회에 이용되는 메서드
-    public static MemoResponse toMemo(String message, Long memoId, String memoContent, IsVisible isVisible) {
+    public static MemoResponse toMemo(String message, Long memoId, String memoContent, IsVisible isVisible, IsChecked isChecked) {
         return MemoResponse.builder()
                 .memoId(memoId)
                 .message(message)
                 .memoContent(memoContent)
                 .isVisible(isVisible)
+                .isChecked(isChecked)
                 .build();
     }
 }
