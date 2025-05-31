@@ -1,10 +1,12 @@
 package mylog_backend.mylog.diary;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import mylog_backend.mylog.memo.MemoResponse;
 
+@JsonInclude(JsonInclude.Include.NON_NULL) // response body에서 null값인 필드는 제외됨
 @Schema(description = "일기 API 요청후 응답으로 나온 결과물을 담는 DTO입니다.")
 @Getter
 public class DiaryResponse {
