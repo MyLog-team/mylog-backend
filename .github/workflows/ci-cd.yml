@@ -40,16 +40,16 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
 
-#       main 브랜치에 병합된 PR 정보 추출 (수정된 버전)
+
       - name: Get Merged PR Info
-        id: get_pr_info # id 이름을 더 명확하게 변경
+        id: get_pr_info
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-#           PR 번호, 제목, 원본 브랜치 이름을 JSON 형태로 한 번에 가져옵니다.
+
           PR_INFO=$(gh pr list --repo ${{ github.repository }} --state closed --search "is:merged" --json number,title,headRefName,mergeCommit \
             --jq ".[] | select(.mergeCommit.oid == \"${{ github.sha }}\")")
 
-          # 각 정보를 추출하여 다음 단계에서 사용할 수 있도록 변수로 저장합니다.
+
           echo "PR_NUMBER=$(echo $PR_INFO | jq .number)" >> $GITHUB_OUTPUT
           echo "PR_TITLE=$(echo $PR_INFO | jq .title)" >> $GITHUB_OUTPUT
           echo "PR_BRANCH=$(echo $PR_INFO | jq .headRefName)" >> $GITHUB_OUTPUT
