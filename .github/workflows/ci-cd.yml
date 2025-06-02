@@ -40,7 +40,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
 
-      # main 브랜치에 병합된 PR 정보 추출 (수정된 버전)
+#       main 브랜치에 병합된 PR 정보 추출 (수정된 버전)
       - name: Get Merged PR Info
         id: get_pr_info # id 이름을 더 명확하게 변경
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
