@@ -28,6 +28,10 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
+      # 빌드 권한 추가
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
       # 3. Gradle 빌드 (테스트 포함 -> 테스트가 동작하는지 확인하기 위함)
       - name: Build my project with Gradle
         run: ./gradlew build
