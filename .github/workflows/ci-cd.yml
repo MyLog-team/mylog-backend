@@ -20,15 +20,6 @@ jobs:
       # 1. 소스 코드 체크아웃
       - name: Checkout project source code # 내 프로젝트 코드를 불러옴
         uses: actions/checkout@v4 # 라이브러리를 깃허브 마켓플레이스에서 가져옴
-
-      # ★★★ 디버깅: 현재 위치와 파일/디렉터리 목록을 자세히 확인합니다. ★★★
-      - name: Check current directory and list files
-        run: |
-         echo "Current directory:"
-          pwd
-          echo "---------------------"
-          echo "Listing all files and directories recursively:"
-          ls -alR
         
 
       # 2. JDK 21 설치
@@ -38,13 +29,14 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
-      # 빌드 권한 추가
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
 
       # 3. Gradle 빌드 (테스트 포함 -> 테스트가 동작하는지 확인하기 위함)
       - name: Build my project with Gradle
-        run: ./gradlew build
+        working-directory: ./mylog
+
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build
 
       # 4. Docker Hub 로그인 -> 프로젝트 이미지를 올리기 위함
       - name: Login to Docker Hub
