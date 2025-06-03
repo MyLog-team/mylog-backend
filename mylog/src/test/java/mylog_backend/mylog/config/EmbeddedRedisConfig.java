@@ -18,7 +18,7 @@ import java.io.IOException;
 @TestConfiguration   // ⬅️ @TestConfiguration 대신 @Configuration 을 사용
 public class EmbeddedRedisConfig {
 
-    private static final int REDIS_PORT = 6379;
+    private static final int REDIS_PORT = 6380;
     private RedisServer redisServer;
 
     @PostConstruct
