@@ -38,9 +38,6 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }} # youtube api 키
 #          CHATGPT_API_KEY: 필요시 연결
 
-
-
-
         run: |
           chmod +x ./gradlew
           ./gradlew build
@@ -87,7 +84,7 @@ jobs:
         run: |
           IMAGE_TAG=$(echo ${{ github.sha }} | cut -c1-7)
           
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:$IMAGE_TAG -t ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:latest .
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:$IMAGE_TAG -t ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:latest ./mylog
           
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:$IMAGE_TAG
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:latest
