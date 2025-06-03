@@ -54,8 +54,8 @@ public class EmbeddedRedisConfig {
     public static void setRedisProperties(DynamicPropertyRegistry registry) {
         // ✅ DynamicPropertySource가 실행되는지 확인하는 로그
         System.out.println("✅✅✅ [EmbeddedRedisConfig] @DynamicPropertySource: 레디스 포트 및 설정 확인 " + REDIS_PORT);
-        registry.add("redis.port", () -> String.valueOf(REDIS_PORT));
-        registry.add("redis.host", () -> "127.0.0.1");
+        registry.add("spring.redis.port", () -> String.valueOf(REDIS_PORT));
+        registry.add("spring.redis.host", () -> "127.0.0.1");
     }
 }
 
