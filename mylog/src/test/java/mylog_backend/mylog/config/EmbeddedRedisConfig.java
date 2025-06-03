@@ -7,7 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import redis.embedded.RedisServer; // codemonster의 embedded redis 사용
+import redis.embedded.RedisServer;
+
 
 import java.io.IOException;
 
@@ -22,8 +23,14 @@ public class EmbeddedRedisConfig {
     public void startRedis() throws IOException {
         // ✅ PostConstruct 메소드가 실행되는지 확인하는 로그
         System.out.println("✅✅✅ [EmbeddedRedisConfig] @PostConstruct: startRedis() - STARTING EMBEDDED REDIS ON PORT " + REDIS_PORT);
+
         try {
-            redisServer = new RedisServer(REDIS_PORT);
+            redisServer = RedisServer.newRedisServer()
+                            .port(REDIS_PORT)
+                            .slaveOf("localhost", REDIS_PORT)
+                            .setting("maxmemoy 128M")
+                            .build();
+
             redisServer.start();
             System.out.println("✅✅✅ [EmbeddedRedisConfig] @PostConstruct: startRedis() - EMBEDDED REDIS STARTED SUCCESSFULLY");
         } catch (Exception e) {
