@@ -50,7 +50,7 @@ public class EmbeddedRedisConfig {
         }
     }
 
-    @DynamicPropertySource
+    @DynamicPropertySource // github actions만  설정
     public static void setRedisProperties(DynamicPropertyRegistry registry) {
         // ✅ DynamicPropertySource가 실행되는지 확인하는 로그
         System.out.println("✅✅✅ [EmbeddedRedisConfig] @DynamicPropertySource: 레디스 포트 및 설정 확인 " + REDIS_PORT);
