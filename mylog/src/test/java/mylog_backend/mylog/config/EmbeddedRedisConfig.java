@@ -53,9 +53,14 @@ public class EmbeddedRedisConfig {
     @DynamicPropertySource // github actions만  설정
     public static void setRedisProperties(DynamicPropertyRegistry registry) {
         // ✅ DynamicPropertySource가 실행되는지 확인하는 로그
-        System.out.println("✅✅✅ [EmbeddedRedisConfig] @DynamicPropertySource: 레디스 포트 및 설정 확인 " + REDIS_PORT);
-        registry.add("spring.redis.port", () -> String.valueOf(REDIS_PORT));
-        registry.add("spring.redis.host", () -> "127.0.0.1");
+        String githubActions = System.getenv("GITHUB_ACTIONS");
+        if ("true".equalsIgnoreCase(githubActions)) {
+            System.out.println("✅✅✅ [EmbeddedRedisConfig] GitHub Actions 환경에서 Redis 설정 적용, 포트: " + REDIS_PORT);
+            registry.add("spring.redis.port", () -> String.valueOf(REDIS_PORT));
+            registry.add("spring.redis.host", () -> "127.0.0.1");
+        } else {
+            System.out.println("🚫 [EmbeddedRedisConfig] GitHub Actions 환경이 아님, 기본 설정 유지");
+        }
     }
 }
 
