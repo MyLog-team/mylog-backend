@@ -21,6 +21,7 @@ java {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' } // ⬅️ 이 줄을 추가해주세요!
 }
 
 dependencies {
@@ -63,19 +64,19 @@ dependencies {
 
 	// Java에서 JSON 파싱 및 생성에 사용
 	implementation 'org.json:json:20231013'
-	
-	testImplementation('com.github.codemonstur:embedded-redis:0.7.3') {
+
+	// Embedded redis 라이브러리
+	testImplementation('com.github.codemonstur:embedded-redis:1.4.3') {
 		exclude group: 'org.slf4j', module: 'slf4j-simple'
-		exclude group: 'commons-logging', module: 'commons-logging' // 혹시 모를 충돌 방지
 	}
 
 	// 전체 프로젝트에서 충돌 나는 로깅 라이브러리 제외 (이중 체크)
-	configurations {
-		all {
-			exclude group: 'org.slf4j', module: 'slf4j-simple'
-			exclude group: 'commons-logging', module: 'commons-logging'
-		}
-	}
+//	configurations {
+//		all {
+//			exclude group: 'org.slf4j', module: 'slf4j-simple'
+//			exclude group: 'commons-logging', module: 'commons-logging'
+//		}
+//	}
 
 
 	testImplementation 'org.mockito:mockito-core'
