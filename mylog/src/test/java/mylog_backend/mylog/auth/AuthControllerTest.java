@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-//@Tag("external-integration") // CI에서 빌드시 해당 파일 제외
+@Tag("external-integration") // CI에서 빌드시 해당 파일 제외
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
