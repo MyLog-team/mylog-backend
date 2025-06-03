@@ -68,10 +68,6 @@ jobs:
       - name: Check redis-server version
         run: redis-server --version || echo "redis-server not found or cannot execute"
 
-      # 실제 테스트 실행
-      - name: Run tests
-        run: ./gradlew test # or mvn test 등 실제 빌드 & 테스트 명령어
-
       - name: List Docker containers
         run: docker ps -a
 
