@@ -22,20 +22,19 @@ public class EmbeddedRedisConfig {
     @PostConstruct
     public void startRedis() throws IOException {
         // ✅ PostConstruct 메소드가 실행되는지 확인하는 로그
-        System.out.println("✅✅✅ [EmbeddedRedisConfig] @PostConstruct: startRedis() - STARTING EMBEDDED REDIS ON PORT " + REDIS_PORT);
+        System.out.println("✅✅✅ [EmbeddedRedisConfig] @PostConstruct: startRedis() - Port에서 임베디드 레디스 실행 시작.. " + REDIS_PORT);
 
         try {
             redisServer = RedisServer.newRedisServer()
                             .port(REDIS_PORT)
-                            .slaveOf("localhost", REDIS_PORT)
-                            .setting("maxmemoy 128M")
+                            .setting("maxmemory 128M")
                             .build();
 
             redisServer.start();
-            System.out.println("✅✅✅ [EmbeddedRedisConfig] @PostConstruct: startRedis() - EMBEDDED REDIS STARTED SUCCESSFULLY");
+            System.out.println("✅✅✅ [EmbeddedRedisConfig] @PostConstruct: startRedis() - 임베디드 레디스 실행 성공!");
         } catch (Exception e) {
             // ✅ 혹시 서버 시작 시 에러가 발생하면 로그로 출력
-            System.err.println("🔥🔥🔥 [EmbeddedRedisConfig] FAILED TO START EMBEDDED REDIS: " + e.getMessage());
+            System.err.println("🔥🔥🔥 [EmbeddedRedisConfig] @PostConstruct: startRedis() - 임베디드 레디스 실행 실패...: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -43,7 +42,7 @@ public class EmbeddedRedisConfig {
     @PreDestroy
     public void stopRedis() throws IOException {
         // ✅ PreDestroy 메소드가 실행되는지 확인하는 로그
-        System.out.println("✅✅✅ [EmbeddedRedisConfig] @PreDestroy: stopRedis()");
+        System.out.println("✅✅✅ [EmbeddedRedisConfig] @PreDestroy: stopRedis(), 임베디드 레디스 서버 정지");
         if (redisServer != null) {
             redisServer.stop();
         }
@@ -52,9 +51,9 @@ public class EmbeddedRedisConfig {
     @DynamicPropertySource
     public static void setRedisProperties(DynamicPropertyRegistry registry) {
         // ✅ DynamicPropertySource가 실행되는지 확인하는 로그
-        System.out.println("✅✅✅ [EmbeddedRedisConfig] @DynamicPropertySource: Setting redis properties to port " + REDIS_PORT);
+        System.out.println("✅✅✅ [EmbeddedRedisConfig] @DynamicPropertySource: 레디스 포트 및 설정 확인 " + REDIS_PORT);
         registry.add("redis.port", () -> String.valueOf(REDIS_PORT));
-        registry.add("redis.host", () -> "localhost");
+        registry.add("redis.host", () -> "127.0.0.1");
     }
 }
 
