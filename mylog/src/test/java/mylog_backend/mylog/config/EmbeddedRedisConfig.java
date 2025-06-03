@@ -3,13 +3,16 @@ package mylog_backend.mylog.config;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
 
-@TestConfiguration
+@Profile("test") // ⬅️ "test" 프로파일이 활성화될 때만 이 설정을 사용
+@Configuration   // ⬅️ @TestConfiguration 대신 @Configuration 을 사용
 public class EmbeddedRedisConfig {
 
     private static final int REDIS_PORT = 6380;
