@@ -14,6 +14,19 @@ jobs:
   build-and-deploy: # 빌드와 배포 작업
     runs-on: ubuntu-latest # 실행 환경 -> CI/CD 모두 같은 실행환경에서 작동해야한다.
 
+
+    services:
+      redis: # 테스트용 Redis 컨테이너 추가
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+
     # 1~5 : CI 작업
     # 6 : CD 작업
     steps:
