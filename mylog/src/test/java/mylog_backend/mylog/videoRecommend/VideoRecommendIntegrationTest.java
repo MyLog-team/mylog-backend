@@ -17,7 +17,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
-@Tag("external-integration") // CI에서 빌드시 해당 파일 제외
+//@Tag("external-integration") // CI에서 빌드시 해당 파일 제외
 /**
  * 실제 유튜브 API로 테스트
  */

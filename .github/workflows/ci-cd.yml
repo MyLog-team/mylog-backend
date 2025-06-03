@@ -33,6 +33,13 @@ jobs:
       # 3. Gradle 빌드 (테스트 포함 -> 테스트가 동작하는지 확인하기 위함)
       - name: Build my project with Gradle
         working-directory: ./mylog
+        env: # 환경 변수 설정
+          JWT_SECRET: ${{ secrets.JWT_SECRET }} # JWT secret 키
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }} # youtube api 키
+#          CHATGPT_API_KEY: 필요시 연결
+
+
+
 
         run: |
           chmod +x ./gradlew
