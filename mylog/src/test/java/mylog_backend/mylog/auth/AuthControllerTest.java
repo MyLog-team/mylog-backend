@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,7 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(EmbeddedRedisConfig.class)
 class AuthControllerTest {
 
-
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate; // 혹은 StringRedisTemplate
 
     // spring MVC 애플리케이션의 웹 계층을 실제 HTTP 요청 없이 테스트 가능
     @Autowired
@@ -52,6 +54,9 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
+        // ✅ Redis 데이터 초기화
+        redisTemplate.getConnectionFactory().getConnection().flushAll();
+
     }
 
     @Test
