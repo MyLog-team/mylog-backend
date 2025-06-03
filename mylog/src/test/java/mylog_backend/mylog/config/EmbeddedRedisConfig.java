@@ -17,26 +17,34 @@ public class EmbeddedRedisConfig {
 
     @PostConstruct
     public void startRedis() throws IOException {
-        redisServer = new RedisServer(REDIS_PORT);
-        redisServer.start();
+        // ✅ PostConstruct 메소드가 실행되는지 확인하는 로그
+        System.out.println("✅✅✅ [EmbeddedRedisConfig] @PostConstruct: startRedis() - STARTING EMBEDDED REDIS ON PORT " + REDIS_PORT);
+        try {
+            redisServer = new RedisServer(REDIS_PORT);
+            redisServer.start();
+            System.out.println("✅✅✅ [EmbeddedRedisConfig] @PostConstruct: startRedis() - EMBEDDED REDIS STARTED SUCCESSFULLY");
+        } catch (Exception e) {
+            // ✅ 혹시 서버 시작 시 에러가 발생하면 로그로 출력
+            System.err.println("🔥🔥🔥 [EmbeddedRedisConfig] FAILED TO START EMBEDDED REDIS: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @PreDestroy
     public void stopRedis() {
+        // ✅ PreDestroy 메소드가 실행되는지 확인하는 로그
+        System.out.println("✅✅✅ [EmbeddedRedisConfig] @PreDestroy: stopRedis()");
         if (redisServer != null) {
             redisServer.stop();
         }
     }
 
-
-    /**
-     * Redis의 포트, 호스트 값을 덮어씌움
-     * @param registry
-     */
     @DynamicPropertySource
     public static void setRedisProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.redis.port", () -> String.valueOf(REDIS_PORT));
-        registry.add("spring.redis.host", () -> "localhost");
+        // ✅ DynamicPropertySource가 실행되는지 확인하는 로그
+        System.out.println("✅✅✅ [EmbeddedRedisConfig] @DynamicPropertySource: Setting redis properties to port " + REDIS_PORT);
+        registry.add("redis.port", () -> String.valueOf(REDIS_PORT));
+        registry.add("redis.host", () -> "localhost");
     }
 }
 
