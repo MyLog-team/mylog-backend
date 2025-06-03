@@ -1,51 +1,19 @@
 services:
-  postgres:
-    image: "postgres:latest"
-    container_name: mylog-postgres
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_USER=${POSTGRES_USER}
-    ports:
-      - "5432:5432"
-
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  rabbitmq:
-    container_name: mylog-rabbitmq
-    image: "rabbitmq:latest"
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-    ports:
-      - "5672:5672"
-  redis:
-    container_name: mylog-redis
-    image: "redis:latest"
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ] # Redis 서버가 응답하는지 확인
-      interval: 1s # 1초마다 체크
-      timeout: 3s # 3초 내에 응답 없으면 실패
-      retries: 30 # 최대 30번 (30초) 재시도
-      start_period: 5s # 컨테이너 시작 후 5초 동안은 헬스 체크 실패해도 무시
-      # --- 여기까지 추가/수정 ---
 
   application:
-    build: .
+    image: "${DOCKER_HUB_USERNAME}/mylog:v.0.0.1" # 프로젝트 버전이 바뀔때마다 변경
+#    build: . # 배포시 이미 빌드된 이미지를 가져오므로 삭제
     container_name: mylog-springboot
     ports:
       - "8080:8080"
     depends_on:
       postgres:
-        condition: service_started # postgres는 기본적으로 시작만 되면 됨
+        condition: service_healthy # postgres가 켜질때까지 기다림
       rabbitmq:
-        condition: service_started # rabbitmq도 시작만 되면 됨
+        condition: service_healthy # rabbitmq를 기다림
       redis:
-        condition: service_healthy # ★ Redis가 'healthy' 상태가 될 때까지 기다림
-    environment:
+        condition: service_healthy # Redis가 'healthy' 상태가 될 때까지 기다림
+    environment: # 환경변수 설정
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
@@ -57,6 +25,59 @@ services:
       - SPRING_REDIS_PORT=6379
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+
+
+  postgres:
+    image: "postgres:17"
+    container_name: mylog-postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck: # PostgreSQL이 띄워질때까지 확인
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ] # 컨테이너가 실행되는지 확인하는 명령어
+      interval: 10s # 상태를 확인하는 주기
+      timeout: 5s # 확인했을때 5초간 응답이 없으면 실패했다고 판단
+      retries: 5 # 최대 시도 횟수
+
+
+  rabbitmq:
+    container_name: mylog-rabbitmq
+    image: "rabbitmq:4-management"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "5672:5672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+
+  redis:
+    container_name: mylog-redis
+    image: "redis:7" # redis 버전 명시
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 1s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+
+  # prometheus, grafana 설정시 추가
+#  prometheus:
+
+
 
 volumes:
   postgres_data:

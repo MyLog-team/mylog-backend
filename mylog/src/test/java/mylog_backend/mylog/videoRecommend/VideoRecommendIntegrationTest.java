@@ -6,6 +6,7 @@ import mylog_backend.mylog.preference.PreferenceRepository;
 import mylog_backend.mylog.user.User;
 import mylog_backend.mylog.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +16,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+
+//@Tag("external-integration") // CI에서 빌드시 해당 파일 제외
 /**
  * 실제 유튜브 API로 테스트
  */

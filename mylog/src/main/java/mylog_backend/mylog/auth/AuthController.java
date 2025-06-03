@@ -74,5 +74,17 @@ public class AuthController {
     }
 
 
+    /**
+     * 인증된 사용자가 보호된 리소스에 접근한다.
+     * 로그아웃 테스트에만 사용됨
+     * @return : 성공 메시지
+     */
+    @GetMapping("/auth/protected-resource")
+    public ResponseEntity<String> getProtectedResource() {
+        // 이 코드가 실행된다는 것 자체가 인증에 성공했다는 의미입니다.
+        return ResponseEntity.ok("성공적으로 보호된 리소스에 접근했습니다.");
+    }
+
+
 
 }

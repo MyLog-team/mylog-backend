@@ -27,7 +27,8 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     private static final String[] SWAGGER_PATHS = {
-            "/auth/**",
+            "/auth/signup",
+            "/auth/login",
             "/swagger-resources/**",
             "/webjars/**",
             "/v3/api-docs/**",
