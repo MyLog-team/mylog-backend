@@ -61,6 +61,17 @@ public class SecurityConfig {
                                 // 5. 조회 API는 비로그인 유저도 접근 가능 (예시)
                                 .requestMatchers(HttpMethod.GET, "/api/post/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
+                                // 6. 모니터링 도구 관련 경로는 패스 가능
+                                .requestMatchers("/actuator/**").permitAll()
+                                .requestMatchers( "/prometheus/**").permitAll()
+                                .requestMatchers("/grafana/**").permitAll()
+                                .requestMatchers("/api/metrics/**").permitAll()
+                                .requestMatchers("metrics").permitAll()
+
+
+
+
+
 
                                 .anyRequest().authenticated() // 그 외 모든 요청 인증 처리
                 )
