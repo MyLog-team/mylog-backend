@@ -15,7 +15,7 @@ jobs:
 
     services:
       redis: # 테스트용 Redis 컨테이너 추가
-        image: redis
+        image: redis:7
         ports:
           - 6379:6379
         options: >-
@@ -50,29 +50,29 @@ jobs:
           chmod +x ./gradlew
           ./gradlew build
 
-      # redis 디버깅 로그
+      # redis 디버깅 로그 -> 주석처리, 필요시 사용
 
       # 도커 정보 확인
-      - name: Check Docker info
-        run: docker info
-
-      # 현재 실행 중 프로세스 리스트 확인 (redis-server 포함 여부 점검용)
-      - name: List running processes
-        run: ps aux | grep redis
-
-      # 포트 6379 사용 중인지 확인
-      - name: Check port 6379 usage
-        run: sudo netstat -tulnp | grep 6379 || echo "Port 6379 not in use"
-
-      # redis-server 버전 확인 (실행 가능 여부 체크)
-      - name: Check redis-server version
-        run: redis-server --version || echo "redis-server not found or cannot execute"
-
-      - name: List Docker containers
-        run: docker ps -a
-
-      - name: Inspect Redis container
-        run: docker inspect redis
+#      - name: Check Docker info
+#        run: docker info
+#
+#      # 현재 실행 중 프로세스 리스트 확인 (redis-server 포함 여부 점검용)
+#      - name: List running processes
+#        run: ps aux | grep redis
+#
+#      # 포트 6379 사용 중인지 확인
+#      - name: Check port 6379 usage
+#        run: sudo netstat -tulnp | grep 6379 || echo "Port 6379 not in use"
+#
+#      # redis-server 버전 확인 (실행 가능 여부 체크)
+#      - name: Check redis-server version
+#        run: redis-server --version || echo "redis-server not found or cannot execute"
+#
+#      - name: List Docker containers
+#        run: docker ps -a
+#
+#      - name: Inspect Redis container
+#        run: docker inspect redis
 
       # 4. Docker Hub 로그인 -> 프로젝트 이미지를 올리기 위함
       - name: Login to Docker Hub
@@ -81,6 +81,8 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }} # ${{}}로 둘러쌓인 값은 Github Secrets에서 값을 저장후 할당함
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
+
+      # 5. 머지되는 PR 정보 로깅
       - name: Get Merged PR Info
         id: get_pr_info
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -108,7 +110,8 @@ jobs:
           echo "  - PR Title   : ${{ steps.get_pr_info.outputs.PR_TITLE }}"
           echo "=========================================================="
 
-      # 5. Docker 이미지 빌드 및 푸시
+
+      # 6. Docker 이미지 빌드 및 푸시
       - name: Build and push mylog Docker image
         run: |
           IMAGE_TAG=$(echo ${{ github.sha }} | cut -c1-7)
@@ -118,9 +121,12 @@ jobs:
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:$IMAGE_TAG
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:latest
 
+
       # 모니터링 도구 관련 설정 필요
 
-      # 6. EC2 서버에 접속하여 배포 -> 찐 배포시 봉인해제
+
+
+      #  EC2 서버에 접속하여 배포 -> 찐 배포시 봉인해제
 
 #      - name: Deploy to EC2
 #        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
