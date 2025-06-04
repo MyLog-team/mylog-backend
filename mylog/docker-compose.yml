@@ -5,7 +5,7 @@ services:
 #    build: . # 배포시 이미 빌드된 이미지를 가져오므로 삭제
     container_name: mylog-springboot
     ports:
-      - "8080:8080"
+      - "18080:8080" # 서버 외부 포트를 18080으로 설정
     depends_on:
       postgres:
         condition: service_healthy # postgres가 켜질때까지 기다림
@@ -25,6 +25,8 @@ services:
       - SPRING_REDIS_PORT=6379
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+    networks:
+      - mylog_app-network
 
 
   postgres:
@@ -43,6 +45,9 @@ services:
       interval: 10s # 상태를 확인하는 주기
       timeout: 5s # 확인했을때 5초간 응답이 없으면 실패했다고 판단
       retries: 5 # 최대 시도 횟수
+    networks:
+      - mylog_app-network
+
 
 
   rabbitmq:
@@ -59,6 +64,9 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    networks:
+      - mylog_app-network
+
 
 
   redis:
@@ -72,12 +80,44 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+    networks:
+      - mylog_app-network
+
 
 
   # prometheus, grafana 설정시 추가
-#  prometheus:
+  prometheus:
+    image: "prom/prometheus:v2.53.4"
+    container_name: mylog-prometheus
+    ports:
+      - "19090:9090" # http://localhost:19090/
+    volumes:
+      - ./src/main/java/mylog_backend/mylog/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command: # prometheus.yml의 설정대로 실행
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - mylog_app-network
 
 
+  grafana:
+    image: "grafana/grafana:12.0.1"
+    container_name: mylog-grafana
+    volumes: # src/main 내 프로젝트 폴더에 위치
+      - ./src/main/java/mylog_backend/mylog/grafana:/etc/grafana/provisioning
+      - ./src/main/java/mylog_backend/mylog/grafana/data:/var/lib/grafana
+    ports:
+      - "13000:3000"
+    networks:
+      - mylog_app-network
+
+
+
+
+# 다른 컨테이너끼리 이름으로 통신 가능
+networks:
+  mylog_app-network:
+    name: mylog_app-network
+    driver: bridge
 
 volumes:
   postgres_data:

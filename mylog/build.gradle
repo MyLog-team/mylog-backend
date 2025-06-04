@@ -65,18 +65,17 @@ dependencies {
 	// Java에서 JSON 파싱 및 생성에 사용
 	implementation 'org.json:json:20231013'
 
+
 	// Embedded redis 라이브러리
 	testImplementation('com.github.codemonstur:embedded-redis:1.4.3') {
 		exclude group: 'org.slf4j', module: 'slf4j-simple'
 	}
 
-	// 전체 프로젝트에서 충돌 나는 로깅 라이브러리 제외 (이중 체크)
-//	configurations {
-//		all {
-//			exclude group: 'org.slf4j', module: 'slf4j-simple'
-//			exclude group: 'commons-logging', module: 'commons-logging'
-//		}
-//	}
+
+	// 모니터링 도구 prometheus + grafana 조합을 위한 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+
 
 
 	testImplementation 'org.mockito:mockito-core'

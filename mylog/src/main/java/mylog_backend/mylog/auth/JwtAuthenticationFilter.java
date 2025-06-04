@@ -26,7 +26,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    private static final String[] SWAGGER_PATHS = {
+    private static final String[] AGREE_PATHS = {
             "/auth/signup",
             "/auth/login",
             "/swagger-resources/**",
@@ -34,7 +34,12 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             "/v3/api-docs/**",
             "/v3/api-docs",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/actuator/**",
+            "/prometheus/**",
+            "/grafana/**",
+            "/api/metrics/**",
+            "metrics"
     };
 
     @Override
@@ -44,9 +49,9 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         String requestURI = httpRequest.getRequestURI();
 
-        // 스웨거 관련 경로는 필터 패스 (인증 검사 안 함)
-        for (String swaggerPath : SWAGGER_PATHS) {
-            if (pathMatcher.match(swaggerPath, requestURI)) {
+        // 스웨거, 모니터링, 인증 관련 경로는 필터 패스 (인증 검사 안 함)
+        for (String agreePath : AGREE_PATHS) {
+            if (pathMatcher.match(agreePath, requestURI)) {
                 log.debug("Skipping JWT filter for public path: {}", requestURI); // ⚠️ 로그 추가
                 chain.doFilter(request, response);
                 return; // 필터 체인 중단 후 다음으로 넘김
