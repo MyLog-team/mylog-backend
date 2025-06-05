@@ -27,11 +27,12 @@ public class MemoRequest {
     // url별로 메모에 대한 매개변수가 필요할때 확장가능
     public MemoRequest(String memoContent, IsChecked isChecked, byte isVisible) {
         this.memoContent = memoContent;
+
     }
 
     // 메모 객체 생성 메서드
     // 메모 생성자에서 컨텐트만 가져와서 세팅
-    public Memo from() {
+    public Memo toMemo() {
         return Memo.builder()
                 .memoContent(memoContent)
                 .isChecked(IsChecked.UNCHECKED)

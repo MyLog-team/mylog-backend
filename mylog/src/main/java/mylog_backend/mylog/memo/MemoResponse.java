@@ -52,7 +52,13 @@ public class MemoResponse {
     }
 
 
-    // 메모 체크시 제거 응답 DTO 메서드
+    /**
+     * 메모 체크시 논리적 삭제가 이루어짐
+     * @param message : 성공시 응답 메시지
+     * @param memoId : 체크된 메모 아이디
+     * @param isChecked : CHECKED 수정되어야함
+     * @return
+     */
     public static MemoResponse toCheckedMemo(String message, Long memoId, IsChecked isChecked) {
         return MemoResponse.builder()
                 .message(message)
@@ -62,7 +68,15 @@ public class MemoResponse {
     }
 
 
-    // 여러/단일 메모 조회에 이용되는 메서드
+    /**
+     * 메모 목록/단건 조회시 이용
+     * @param message : 성공시 응답 메시지
+     * @param memoId : 조회된 메모 아이디
+     * @param memoContent: 조회된 메모의 내용
+     * @param isVisible : 조회된 메모가 보이는지 여부
+     * @param isChecked : 조회된 메모가 체크되었는지 여부
+     * @return : 조회된 메모를 엔티티로 가공하여 반환
+     */
     public static MemoResponse toMemo(String message, Long memoId, String memoContent, IsVisible isVisible, IsChecked isChecked) {
         return MemoResponse.builder()
                 .memoId(memoId)
