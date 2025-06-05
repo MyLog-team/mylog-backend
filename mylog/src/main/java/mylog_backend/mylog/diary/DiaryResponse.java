@@ -38,8 +38,8 @@ public class DiaryResponse {
      * 일기 응답 DTO 생성자
      * 일기 관련 로직후 이용됨
      * 로직이 다양해질수록 확장성을 띄도록 설계
-     * @param message
-     * @param diaryId
+     * @param message : 일기 요청 성공시 메시지
+     * @param diaryId : 일기 아이디
      */
     @Builder
     public DiaryResponse(String message, Long diaryId, String dairyTitle,
@@ -52,20 +52,19 @@ public class DiaryResponse {
         this.isPublic = isPublic;
         this.feeling = feeling;
         this.feelingScore = feelingScore;
-        // 이후 응답DTO가 사용되는 형태에 따라서 필드 추가 가능
     }
 
 
     /**
      * 일기 단건/목록 조회시 사용
-     * @param message
-     * @param diaryId
-     * @param dairyTitle
-     * @param dairyContent
-     * @param feeling
-     * @param isPublic
-     * @param feelingScore
-     * @return
+     * @param message : 일기 조회 요청 성공시 메시지
+     * @param diaryId : 일기 아이디
+     * @param dairyTitle : 일기 제목
+     * @param dairyContent : 일기 내용
+     * @param feeling : 감정
+     * @param isPublic : 공개여부
+     * @param feelingScore : 감정점수
+     * @return : 일기 응답 DTO로 가공된 데이터
      */
     public static DiaryResponse toDiary(String message, Long diaryId, String dairyTitle,
                                         String dairyContent, Feeling feeling,

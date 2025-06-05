@@ -1,7 +1,7 @@
 package mylog_backend.mylog.diary;
 
 import jakarta.validation.ConstraintViolationException;
-import lombok.RequiredArgsConstructor;
+import mylog_backend.mylog.common.exception.UnauthorizedException;
 import mylog_backend.mylog.user.User;
 import mylog_backend.mylog.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -12,20 +12,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.assertj.core.api.Assertions.as;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class DiaryServiceTest {
+public class DiaryServiceIntegrationTest {
 
+    // 통합 테스트를 위해 실제 구현체들을 주입받아 사용
     @Autowired private DiaryService diaryService;
     @Autowired private DiaryRepository diaryRepository;
     @Autowired private UserRepository userRepository;
 
-
+    // 테스트용 데이터 생성
     protected User testUser;
+    protected User daiseek;
     protected DiaryRequest request1;
     protected DiaryRequest request2;
     protected DiaryResponse response1;
@@ -34,6 +37,7 @@ public class DiaryServiceTest {
 
     @BeforeEach
     void setUp() {
+        // 1. 유저 생성
         testUser = User.builder()
                 .loginId("testId1234")
                 .email("test@example.com")
@@ -42,6 +46,15 @@ public class DiaryServiceTest {
                 .build();
         userRepository.save(testUser);
 
+        daiseek = User.builder()
+                .loginId("daiseek123")
+                .email("daiseek@example.com")
+                .password("daiseek123")
+                .userName("정대식")
+                .build();
+        userRepository.save(daiseek);
+
+        // 2. 일기1 생성
         DiaryRequest request1 = DiaryRequest.builder()
                 .diaryTitle("테스트일기1")
                 .diaryContent("엄마저는잘지내요테커사람들이코딩을잘가르쳐줘요")
@@ -51,6 +64,7 @@ public class DiaryServiceTest {
                 .build();
         response1 = diaryService.createDiary(testUser.getId(), request1);
 
+        // 일기2 생성
         DiaryRequest request2 = DiaryRequest.builder()
                 .diaryTitle("테스트일기2")
                 .diaryContent("안녕하세요?")
@@ -80,8 +94,8 @@ public class DiaryServiceTest {
                 .diaryTitle("테스트일기")
                 .diaryContent("엄마저는잘지내요테커사람들이코딩을잘가르쳐줘요")
                 .feeling(Feeling.SAD)
-                .feelingScore(30)
                 .isPublic(IsPublic.PRIVATE)
+                .feelingScore(30)
                 .build();
 
         // when
@@ -154,6 +168,30 @@ public class DiaryServiceTest {
         assertThat(testResponse.getFeelingScore()).isEqualTo(50);
 
         assertThat(savedDiary.getUser().getId()).isEqualTo(testUser.getId());
+
+    }
+
+
+    @Test
+    @DisplayName("PRIVATE로 설정된 일기는 타인이 조회할 수 없다.")
+    void getOtherDiary() {
+        // given
+
+        // testUser의 비공개된 일기
+        Diary testUserDiary1 = diaryRepository.findById(response1.getDiaryId())
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다."));
+
+        // testUser의 공개된 일기
+        Diary testUserDiary2 = diaryRepository.findById(response2.getDiaryId())
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다."));
+
+
+        // when & then
+        // daiseek가 testUser의 비공개 일기(response2)를 조회 시도하면 예외가 발생해야 한다.
+        assertThrows(UnauthorizedException.class, () -> {
+            diaryService.getDiary(daiseek.getId(), testUserDiary1.getId());
+        });
+
 
     }
 
