@@ -14,12 +14,8 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
      * @return
      */
     List<Diary> findAllByUserId(Long userId);
+    // spring data jpa가 명명한 네이밍 룰에 의해 쿼리 메서드 기능이 작동
+    // 위 메서드는 다음 쿼리문과 같은 기능을 한다.
+    // SELECT d FROM Diary d WHERE d.user.id = :userId
 
-
-    /**
-     * 유저 아이디를 기준으로 단일 일기 조회
-     * @param userId
-     * @return
-     */
-    Diary findByUserId(Long userId);
 }

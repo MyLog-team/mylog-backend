@@ -19,10 +19,11 @@ public class DiaryController {
     private final DiaryService diaryService;
 
     /**
-     * 일기 생성
-     * @param request
-     * @return
+     * @param request : 일기 요청 DTO
+     * @param userPrincipal : 인증된 유저를 담는 객체
+     * @return : 응답(메시지 + 저장된 일기 아이디)와 201 상태크도 반환
      */
+
     @Operation(summary = "일기 생성", description = "일기를 생성합니다.")
     @PostMapping("/diaries")
     public ResponseEntity<DiaryResponse> createDiary(@RequestBody DiaryRequest request, @AuthenticationPrincipal UserPrincipal userPrincipal) {
@@ -33,6 +34,11 @@ public class DiaryController {
     }
 
 
+    /**
+     *
+     * @param userPrincipal : 인증된 유저를 담는 객체
+     * @return : 조회된 일기 목록들을 반환
+     */
     @Operation(summary = "일기 목록 조회")
     @GetMapping("/diaries")
     public ResponseEntity<List<DiaryResponse>> getDiaries(@AuthenticationPrincipal UserPrincipal userPrincipal) {
@@ -43,6 +49,12 @@ public class DiaryController {
     }
 
 
+    /**
+     *
+     * @param diaryId : 일기 아이디
+     * @param userPrincipal : 인증된 유저를 담는 객체
+     * @return : 조회된 일기 하나를 반환
+     */
     @Operation(summary = "단일 일기 조회")
     @GetMapping("/diaries/{diaryId}")
     public ResponseEntity<DiaryResponse> getDiary(@PathVariable Long diaryId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
