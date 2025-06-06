@@ -1,11 +1,9 @@
 package mylog_backend.mylog.videoRecommend;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-//@AllArgsConstructor
 public class VideoResponse {
 
     private String title;
@@ -13,9 +11,18 @@ public class VideoResponse {
     private String thumbnailUrl;
 
     @Builder
-    public VideoResponse(YoutubeVideo video) {
-        this.title = video.getTitle();
-        this.videoId = video.getVideoId();
-        this.thumbnailUrl = video.getThumbnailUrl();
+    public VideoResponse(String title, String videoId, String thumbnailUrl) {
+        this.title = title;
+        this.videoId = videoId;
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
+    private static VideoResponse toYoutubeVideo(String message, String title, String videoId, String thumbnailUrl) {
+        return VideoResponse.builder()
+                .title(title)
+                .videoId(videoId)
+                .thumbnailUrl(thumbnailUrl)
+                .build();
+
     }
 }

@@ -15,9 +15,9 @@ public class VideoRecommendController {
 
     /**
      * 1. 동영상 추천 API
-     * @param userId : 사용자 아이디
-     * @param request : 사용자에게 분위기를 입력받음
-     * @return : 생성완료
+     * @param userId : 요청한 사용자 아이디
+     * @param request : 사용자에게 분위기 mood를 입력받음
+     * @return : 요청을 성공적으로 수행후 결과물 반환
      */
     @PostMapping("/users/{user_id}/recommendations")
     public ResponseEntity<VideoResponse> recommendVideo(@PathVariable("user_id") Long userId, @RequestBody MoodRequest request) {
