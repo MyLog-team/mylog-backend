@@ -21,8 +21,8 @@ public class PreferenceRequest {
 
     /**
      * 선호 태그 요청 DTO
-     * @param tag1
-     * @param tag2
+     * @param tag1 : 입력받은 태그1
+     * @param tag2 : 입력받은 태그2
      * 태그는 2개만 받는다.
      */
     @Builder
@@ -32,7 +32,7 @@ public class PreferenceRequest {
     }
 
     /**
-     * Preference 엔티티로 변환하는 메서드
+     * Preference 엔티티의 리스트로 변환하는 메서드
      * @param user : 사용자 객체를 매개값으로 받아서
      * @return : .user()로 사용자를 세팅후, tag들도 할당
      * Preference 생성자에서 태그를 1개밖에 할당하지 않기에 코드를 2줄 사용해서 값을 할당함

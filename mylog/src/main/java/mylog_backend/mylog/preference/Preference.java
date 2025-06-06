@@ -16,7 +16,7 @@ public class Preference {
     @Id @GeneratedValue
     private Integer id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 10)
     private String tag;
 
     // 생성자, getter, setter, builder 등
@@ -25,6 +25,7 @@ public class Preference {
         this.tag = tag;
         user.addPreference(this); // Preference에서 연관관계를 맺도록 강제
     }
+    
 
     /** 1. 사용자 <- 선호 태그
      * 단방향 연관관계, 선호 태그는 사용자만 구분하면 된다.
@@ -36,7 +37,6 @@ public class Preference {
     public void setUser(User user) {
         this.user = user;
     }
-
 
     }
 
