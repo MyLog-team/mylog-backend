@@ -24,9 +24,13 @@ class VideoRecommendServiceTest {
      */
     @BeforeEach
     void setUp() {
+        // 구현체들 기반으로 mock 객체 생성후 할당
         preferenceRepository = mock(PreferenceRepository.class);
         youtubeClient = mock(YoutubeClient.class);
         videoRecommendService = new VideoRecommendService(preferenceRepository, youtubeClient);
+
+        // 테스트용 유저 생성 후 태그까지 입력
+
     }
 
     @Test
@@ -51,8 +55,8 @@ class VideoRecommendServiceTest {
         when(preferenceRepository.findByUserId(userId)).thenReturn(mockPreferences);
 
         // 유튜브 클라이언트 mock 결과
-        List<YoutubeVideo> mockVideos = Arrays.asList(
-                new YoutubeVideo("Relaxing Lofi", "abc123", "http://thumbnail.url")
+        List<VideoResponse> mockVideos = Arrays.asList(
+                new VideoResponse("Relaxing Lofi", "abc123", "http://thumbnail.url")
         );
 
         // 검색 쿼리 수정: 태그 2개 + 무드 + "music"

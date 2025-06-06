@@ -5,8 +5,8 @@ import mylog_backend.mylog.preference.Preference;
 import mylog_backend.mylog.preference.PreferenceRepository;
 import mylog_backend.mylog.user.User;
 import mylog_backend.mylog.user.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +17,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
-//@Tag("external-integration") // CI에서 빌드시 해당 파일 제외
 /**
  * 실제 유튜브 API로 테스트
  */
@@ -40,13 +39,16 @@ public class VideoRecommendIntegrationTest {
     private UserRepository userRepository;
 
 
-    @Test
-    @DisplayName("사용자의 선호 태그에 따라서 유튜브 영상을 추천받는다.")
-    void recommend_shouldReturnRealVideoResponse() {
+    // 테스트용 유저 정보 필드
+    private User user;
+    private Preference p1;
+    private Preference p2;
 
-        // given
+
+    @BeforeEach
+    void setUp() {
         // 테스트용 유저 생성
-        User user = userRepository.save(User.builder()
+        user = userRepository.save(User.builder()
                 .email("test@example.com")
                 .loginId("testLogin")  // ✅ 필수
                 .password("dummyPassword")  // 예시로 같이 채워줌
@@ -56,18 +58,26 @@ public class VideoRecommendIntegrationTest {
                 .build());
 
         // 테스트용 선호 태그 세팅
-        Preference p1 = preferenceRepository.save(Preference.builder()
+        p1 = preferenceRepository.save(Preference.builder()
                 .tag("lofi")
                 .user(user)
                 .build());
 
-        Preference p2 = preferenceRepository.save(Preference.builder()
+        p2 = preferenceRepository.save(Preference.builder()
                 .tag("classic")
                 .user(user)
                 .build());
+    }
 
-        // 유저의 선호 태그도 실제 DB에서 가져오거나 직접 세팅
-        List<Preference> realPreferences = List.of(p1, p2);
+
+    @Test
+    @DisplayName("사용자의 선호 태그에 따라서 유튜브 영상을 추천받는다.")
+    void recommendVideo_UserGetsOneVideo() {
+
+        // given
+
+        // 유저의 선호 태그를 list형태로 세팅
+        List<Preference> preferences = List.of(p1, p2);
 
         // When
         // 유튜브 영상 추천 로직 실행

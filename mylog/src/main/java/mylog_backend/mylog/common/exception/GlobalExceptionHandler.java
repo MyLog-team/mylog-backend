@@ -78,6 +78,16 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(VideoNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleVideoNotFoundException(VideoNotFoundException e) {
+        log.error("영상을 찾지 못했습니다: {}", e.getMessage());
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "VideoNotFound");
+        errorResponse.put("message", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND); // 404 상태코드
+    }
+
+
     /**
      *  일반적인 RuntimeException을 처리하는 핸들러 (최하단에 위치)
      * @param e
