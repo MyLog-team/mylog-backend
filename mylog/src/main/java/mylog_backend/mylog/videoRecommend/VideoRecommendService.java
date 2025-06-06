@@ -5,6 +5,7 @@ import mylog_backend.mylog.common.exception.VideoNotFoundException;
 import mylog_backend.mylog.preference.Preference;
 import mylog_backend.mylog.preference.PreferenceRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Random;
@@ -23,6 +24,7 @@ public class VideoRecommendService {
      * @param mood : 사용자가 입력한 상황, 일기 작성히 듣고 싶은 음악의 분위기
      * @return : selectOneRandomly()를 이용해 영상 하나를 반환
      */
+    @Transactional
     public VideoResponse recommend(Long userId, String mood) {
         // 1. 사용자의 선호 태그를 userId로 찾아와 할당받음
         List<Preference> preferences = preferenceRepository.findByUserId(userId);

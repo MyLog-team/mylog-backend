@@ -5,6 +5,7 @@ import mylog_backend.mylog.preference.Preference;
 import mylog_backend.mylog.preference.PreferenceRepository;
 import mylog_backend.mylog.user.User;
 import mylog_backend.mylog.user.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,9 +51,9 @@ public class VideoRecommendIntegrationTest {
         // 테스트용 유저 생성
         user = userRepository.save(User.builder()
                 .email("test@example.com")
-                .loginId("testLogin")  // ✅ 필수
-                .password("dummyPassword")  // 예시로 같이 채워줌
-                .userName("Tester")         // 다른 NOT NULL 필드도 같이
+                .loginId("testLogin")
+                .password("dummyPassword")
+                .userName("Tester")
                 .provider("local")
                 .providerId("test")
                 .build());
@@ -68,6 +69,13 @@ public class VideoRecommendIntegrationTest {
                 .user(user)
                 .build());
     }
+
+    @AfterEach
+    void tearDown() {
+        userRepository.deleteAll();
+        preferenceRepository.deleteAll();
+    }
+
 
 
     @Test
