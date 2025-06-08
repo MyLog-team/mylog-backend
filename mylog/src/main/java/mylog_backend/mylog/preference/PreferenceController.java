@@ -20,7 +20,7 @@ public class PreferenceController {
     private final PreferenceService preferenceService;
 
     /**
-     *
+     * 선호 태그를 입력받음
      * @param request : 선호 태그를 담은 요청 DTO
      * @param userPrincipal : 연관관계 매핑에 사용, 인증된 사용자 객체를 담고 있음.
      * @return

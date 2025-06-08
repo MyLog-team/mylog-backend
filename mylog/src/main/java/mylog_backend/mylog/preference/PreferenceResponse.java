@@ -26,11 +26,15 @@ public class PreferenceResponse {
     /**
      * 태그를 성공적으로 입력시 사용
      * @param message : 성공 메시지
+     * @param preferenceId1 : 태그1의 아이디
+     * @param preferenceId2 : 태그2의 아이디
      * @return : of 정적 메서드로 응답 변환
      */
-    public static PreferenceResponse of(String message) {
+    public static PreferenceResponse of(String message, Integer preferenceId1, Integer preferenceId2) {
         return PreferenceResponse.builder()
                 .message(message)
+                .preferenceId1(preferenceId1)
+                .preferenceId2(preferenceId2)
                 .build();
     }
 

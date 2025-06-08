@@ -36,6 +36,7 @@ public class PreferenceServiceTest {
     @Transactional
     void savePreferences() {
         // given
+        // 1. 유저 생성
         User user = User.builder()
                 .loginId("testuser")
                 .userName("테스트유저")
@@ -43,6 +44,7 @@ public class PreferenceServiceTest {
                 .build();
         userRepository.save(user);
 
+        // 2. 유저의 선호 태그 저장
         PreferenceRequest request = PreferenceRequest.builder()
                 .tag1("운동")
                 .tag2("독서")

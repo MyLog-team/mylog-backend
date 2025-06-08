@@ -33,9 +33,13 @@ public class PreferenceService {
         // user 엔티티도 같이 세팅 -> 연관관계 메서드
         List<Preference> preferences = request.toPreferences(user);
 
+        Preference preference1 = preferences.get(0);
+        Preference preference2 = preferences.get(1);
+
+
         preferenceRepository.saveAll(preferences);
 
-        return PreferenceResponse.of("선호 태그가 저장되었습니다.");
+        return PreferenceResponse.of("선호 태그가 저장되었습니다.", preference1.getId(), preference2.getId());
 
     }
 }

@@ -9,9 +9,9 @@ import java.util.List;
 public interface PreferenceRepository extends JpaRepository<Preference, Integer> {
 
     /**
-     * 1. userId로 사용자를 찾는다.
+     * userId로 해당 사용자의 태그들을 찾아와 List로 사용
      * @param userId : 사용자 id
-     * @return
+     * @return : List로 묶은 태그들
      */
     List<Preference> findByUserId(Long userId);
 
