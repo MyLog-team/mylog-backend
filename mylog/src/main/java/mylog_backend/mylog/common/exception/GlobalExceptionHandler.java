@@ -89,6 +89,39 @@ public class GlobalExceptionHandler {
 
 
     /**
+     * JWT 초기화중 예외처리
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(JwtInitializationException.class)
+    public ResponseEntity<Map<String, String>> handleJwtInitializationException(JwtInitializationException e) {
+        log.error("JwtUtil 초기화 중 예외가 발생했습니다: {}", e.getMessage());
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "JWTException");
+        errorResponse.put("message", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR); // 500 상태 코드
+    }
+
+
+    /**
+     * JWT 페이로드가 형식에 맞지 않을때 사용
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(InvalidJwtClaimException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidJwtClaimException(JwtInitializationException e) {
+        log.error("JWT 페이로드 형식이 잘못되었습니다.: {}", e.getMessage());
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "InvalidJwtClaim");
+        errorResponse.put("message", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR); // 500 상태 코드
+    }
+
+
+
+
+
+    /**
      *  일반적인 RuntimeException을 처리하는 핸들러 (최하단에 위치)
      * @param e
      * @return

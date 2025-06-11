@@ -25,26 +25,28 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final RedisTemplate<String, String> redisTemplate;
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtProvider, redisTemplate); // 여기에 redisTemplate 넘김
-    }
+//    @Bean
+//    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+//        return new JwtAuthenticationFilter(jwtProvider, redisTemplate); // 여기에 redisTemplate 넘김
+//    }
 
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-        // REST API이므로 basic auth 및 csrf 보안을 사용하지 않습니다.
-        // Spring Security 6.x에서는 람다 표현식을 권장합니다.
+        // REST API이므로 basic auth 및 csrf 보안을 사용하지 않음
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .csrf(csrf -> csrf.disable())
-                .formLogin(formLogin -> formLogin.disable()) // 폼 로그인은 사용하지 않습니다.
-                // JWT를 사용하기 때문에 세션을 사용하지 않습니다.
+                .formLogin(formLogin -> formLogin.disable()) // 폼 로그인은 사용하지 않음.
+                // JWT를 사용하기 때문에 세션을 사용하지 않음
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeHttpRequests ->
@@ -57,10 +59,10 @@ public class SecurityConfig {
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 // 4. Swagger UI 관련 경로 명시적 허용
                                 .requestMatchers("/swagger-ui/**").permitAll()
-                                .requestMatchers("/swagger-ui.html").permitAll() // swagger-ui.html 직접 접근 시
+//                                .requestMatchers("/swagger-ui.html").permitAll() // swagger-ui.html 직접 접근 시
                                 // 5. 조회 API는 비로그인 유저도 접근 가능 (예시)
-                                .requestMatchers(HttpMethod.GET, "/api/post/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
+//                                .requestMatchers(HttpMethod.GET, "/api/post/**").permitAll()
+//                                .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
                                 // 6. 모니터링 도구 관련 경로는 패스 가능
                                 .requestMatchers("/actuator/**").permitAll()
                                 .requestMatchers( "/prometheus/**").permitAll()
@@ -69,14 +71,10 @@ public class SecurityConfig {
                                 .requestMatchers("metrics").permitAll()
 
 
-
-
-
-
                                 .anyRequest().authenticated() // 그 외 모든 요청 인증 처리
                 )
                 // JWT 인증을 위한 필터 추가 (UsernamePasswordAuthenticationFilter 이전에 실행)
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
