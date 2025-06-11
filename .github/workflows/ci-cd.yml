@@ -15,7 +15,7 @@ jobs:
 
     services:
       redis: # 테스트용 Redis 컨테이너 추가
-        image: redis:7
+        image: redis:7-alpine
         ports:
           - 6379:6379
         options: >-
