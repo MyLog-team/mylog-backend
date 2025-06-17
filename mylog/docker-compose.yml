@@ -1,27 +1,29 @@
 services:
 
-  application:
+  mylog-application:
     image: "${DOCKER_HUB_USERNAME}/mylog:v.0.0.1" # 프로젝트 버전이 바뀔때마다 변경
 #    build: . # 배포시 이미 빌드된 이미지를 가져오므로 삭제
     container_name: mylog-springboot
     ports:
       - "18080:8080" # 서버 외부 포트를 18080으로 설정
+    env_file:
+      - ./.env
     depends_on:
-      postgres:
+      mylog-postgres:
         condition: service_healthy # postgres가 켜질때까지 기다림
-      rabbitmq:
+      mylog-rabbitmq:
         condition: service_healthy # rabbitmq를 기다림
-      redis:
+      mylog-redis:
         condition: service_healthy # Redis가 'healthy' 상태가 될 때까지 기다림
     environment: # 환경변수 설정
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://mylog-postgres:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
-      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_HOST=mylog-rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
       - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
-      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_HOST=mylog-redis
       - SPRING_REDIS_PORT=6379
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
@@ -29,7 +31,7 @@ services:
       - mylog_app-network
 
 
-  postgres:
+  mylog-postgres:
     image: "postgres:17"
     container_name: mylog-postgres
     environment:
@@ -50,7 +52,7 @@ services:
 
 
 
-  rabbitmq:
+  mylog-rabbitmq:
     container_name: mylog-rabbitmq
     image: "rabbitmq:4-management"
     environment:
@@ -69,7 +71,7 @@ services:
 
 
 
-  redis:
+  mylog-redis:
     container_name: mylog-redis
     image: "redis:7" # redis 버전 명시
     ports:
@@ -86,7 +88,7 @@ services:
 
 
   # prometheus, grafana 설정시 추가
-  prometheus:
+  mylog-prometheus:
     image: "prom/prometheus:v2.53.4"
     container_name: mylog-prometheus
     ports:
@@ -99,7 +101,7 @@ services:
       - mylog_app-network
 
 
-  grafana:
+  mylog-grafana:
     image: "grafana/grafana:12.0.1"
     container_name: mylog-grafana
     volumes: # src/main 내 프로젝트 폴더에 위치

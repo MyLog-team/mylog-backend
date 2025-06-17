@@ -29,7 +29,8 @@ public class LoginResponse {
 
 
     @Builder
-    public LoginResponse(String accessToken, String refreshToken, String grantType) {
+    public LoginResponse(String message, String accessToken, String refreshToken, String grantType) {
+        this.message = message;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.grantType = grantType;
@@ -46,6 +47,7 @@ public class LoginResponse {
      */
     public static LoginResponse from(String message, String accessToken, String refreshToken,  String grantType) {
         return LoginResponse.builder()
+                .message(message)
                 .grantType(grantType)
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
