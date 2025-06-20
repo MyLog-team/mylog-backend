@@ -2,10 +2,9 @@ package mylog_backend.mylog.auth;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import mylog_backend.mylog.user.User;
+
 
 @Schema(description = "로그인 요청 DTO")
 @Getter

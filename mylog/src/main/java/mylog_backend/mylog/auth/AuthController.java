@@ -22,6 +22,7 @@ public class AuthController {
 //    private final UserService userService;
     private final JwtService jwtService;
     private final JwtUtil jwtUtil;
+    private final JwtProvider jwtProvider;
     private final RedisTemplate<String, String> redisTemplate;
 
     /**
@@ -61,7 +62,7 @@ public class AuthController {
     @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         // 헤더에서 토큰을 꺼냄
-        String token = jwtUtil.resolveToken(request);
+        String token = jwtProvider.resolveToken(request);
         if (token == null) { // 토큰이 없으면 400 상태 코드 반환
             return ResponseEntity.badRequest().body("토큰이 없습니다.");
         }
@@ -79,7 +80,7 @@ public class AuthController {
      * 로그아웃 테스트에만 사용됨
      * @return : 성공 메시지
      */
-    @GetMapping("/auth/protected-resource")
+    @GetMapping("/protected-resource")
     public ResponseEntity<String> getProtectedResource() {
         // 이 코드가 실행된다는 것 자체가 인증에 성공했다는 의미입니다.
         return ResponseEntity.ok("성공적으로 보호된 리소스에 접근했습니다.");

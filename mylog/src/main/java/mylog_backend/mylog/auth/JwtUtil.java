@@ -3,15 +3,11 @@ package mylog_backend.mylog.auth;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mylog_backend.mylog.common.exception.JwtInitializationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Date;
@@ -20,77 +16,84 @@ import static mylog_backend.mylog.auth.JwtConstant.*;
 
 // Util : 어디서든 재사용할 수 있는 공통 로직, 유틸리티 함수가 존재
 
-/** 해당 클래스의 목적
- * 1. JWT 발급 작업 로직
- *
+/**
+ * 비교적 저수준의 JWT 작업만 담당
+ * 1. JWT 키 관리
+ * 20250608. validateToken는 Provider로 이동... 했다가 키 관리 때문에 다시 옮겨옴
+ * 2. 토큰 파싱, 유효성 검증
  */
 @Component
 @Slf4j
-//@RequiredArgsConstructor
-//@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class JwtUtil {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    private final Key key;
+    private final Key key; // key를 Util에서 관리!
 
-    // application.yml에서 secret 값 가져와서 key에 저장
+
+    // JWT 생성자
     public JwtUtil(@Value("${jwt.secret}") String secretKey, RedisTemplate<String, String> redisTemplate) {
-        log.info("DEBUG: JwtUtil constructor called. Value received for 'jwt.secret': '{}'", secretKey);
-
+        // jwt 시크릿 키가 있는지 판단
         if (secretKey == null || secretKey.isEmpty()) {
-            log.error("DEBUG: secretKey is null or empty. Cannot proceed with key decoding. This implies configuration issue.");
-            throw new IllegalArgumentException("JWT secret key must not be null or empty from configuration.");
+            throw new IllegalArgumentException("JWT 시크릿 키가 없습니다.");
         }
 
-        // 토큰 발급 로직, 예외 발생시 실패한 이유를 출력
+        // 토큰 발급 로직
         try {
-            byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-            log.info("DEBUG: Successfully decoded secretKey to bytes. Length: {}", keyBytes.length);
+            byte[] keyBytes = Decoders.BASE64.decode(secretKey); // 시크릿 키로 디코딩
+            log.info("DEBUG: 시크릿 키가 성공적으로 bytes 형태로 변환되었습니다. Length: {}", keyBytes.length);
 
-            // JWT 라이브러리 (HS256)는 최소 32바이트 (256비트) 키를 요구합니다.
+            // JWT 라이브러리 (HS256)는 최소 32바이트의 키를 요구함
             if (keyBytes.length < 32) {
-                log.error("DEBUG: Decoded key length ({}) is less than 32 bytes. JWT HS256 requires 32 bytes minimum.", keyBytes.length);
-                throw new IllegalArgumentException("JWT secret key is too short. Minimum 32 bytes required after Base64 decoding.");
+                log.error("DEBUG: 디코딩된 키의 길이 = ({}), 최소 32바이트 이상이여야 합니다.", keyBytes.length);
+                throw new IllegalArgumentException("JWT 시크릿 키 길이가 너무 짧습니다.. Base64형식으로 디코된 후 32바이트 이상이여야 합니다.");
             }
 
             this.key = Keys.hmacShaKeyFor(keyBytes);
-            log.info("DEBUG: JwtUtil successfully initialized with a valid key.");
-        } catch (IllegalArgumentException e) {
-            log.error("DEBUG: Failed to decode Base64 secretKey or key is invalid. Error: {}", e.getMessage(), e);
+            log.info("DEBUG: JwtUtil이 유효한 키와 함께 초기화되었습니다.");
+        } catch (JwtInitializationException e) {
+            log.error("DEBUG: 시크릿 키로 디코딩을 실패했거나, 키가 유효하지 않습니다. Error: {}", e.getMessage(), e);
             // 이 예외는 보통 Base64 문자열 형식이 잘못되었거나 디코딩 후 길이가 부족할 때 발생합니다.
-            throw new RuntimeException("Error initializing JwtUtil: Invalid JWT secret key format or length. Please check application-test.yml 'jwt.secret' value.", e);
+            throw new JwtInitializationException("DEBUG : Base64 문자열 형식이 잘못되었거나, 길이가 부족합니다. 설정 파일을 확인해주세요.", e);
         } catch (Exception e) {
-            log.error("DEBUG: An unexpected error occurred during JwtUtil initialization: {}", e.getMessage(), e);
-            throw new RuntimeException("Unexpected error during JwtUtil initialization.", e);
+            log.error("DEBUG: Jwt 초기화 중 예외가 발생했습니다.: {}", e.getMessage(), e);
+            throw new JwtInitializationException("JWT 초기화중 예외가 발생했습니다.", e);
         }
+
         // redis 추가
         this.redisTemplate = redisTemplate; // RedisTemplate 초기화
     }
 
-    // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
+
+    /**
+     * 사용자 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
+     */
     public JWToken generateToken(Long userId) {
-        long now = (new Date()).getTime();
+        long now = (new Date()).getTime(); // 발급 당시 시간
 
-        // Access Token 생성
-        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+        String authorities = "ROLE_USER"; // 권한, 사용자 기본 권한을 가짐
 
-        String authorities = "ROLE_USER";
-
+        // accessToken 생성 -> JWT 구성
         String accessToken = Jwts.builder()
-                .setSubject(String.valueOf(userId))
-                .claim("auth", authorities)
-                .claim("id", String.valueOf(userId))
-                .setExpiration(accessTokenExpiresIn)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+                // 헤더는 JWT가 자동으로 할당, 토큰 타입(typ), 시그니쳐 알고리즘(alg)가 할당됨
+
+                // 페이로드에 표시될 값들은 직접 구성
+                .setSubject(String.valueOf(userId)) // subscriber, 사용자 아이디
+                .claim("auth", authorities) // 사용자 권한
+                .claim("id", String.valueOf(userId)) // 사용자 아이디 -> 리팩토링 대상
+                .setExpiration(new Date(now + ACCESS_TOKEN_EXPIRE_TIME)) // 토큰 만료 시간
+                .signWith(key, SignatureAlgorithm.HS256) // 키 암호화에 사용된 알고리즘, HS256 사용 -> 서명 생성
+
+                .compact(); // 헤더, 페이로드(클레임), 시그니쳐를 합쳐서 최종 JWT를 생성
+
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME)) // 만료 시간 설정
+                .signWith(key, SignatureAlgorithm.HS256) // 사용된 암호화
                 .compact();
 
+        // 생성된 권한, 액세스 토큰, 리프레시 토큰 반환
         return JWToken.builder()
                 .grantType(GRANT_TYPE)
                 .accessToken(accessToken)
@@ -99,35 +102,68 @@ public class JwtUtil {
     }
 
 
-    // 토큰 유효성 검증
+//     토큰 유효성 검증
     public boolean validateToken(String token) {
         try {
-            // 1. Redis 블랙리스트에서 토큰이 있는지 확인 (로그아웃된 토큰인지)
-            if (redisTemplate.opsForValue().get(token) != null) {
-                log.info("블랙리스트에 있는 토큰입니다: {}", token);
-                return false; // 블랙리스트에 있으면 유효하지 않음
-            }
-
-            // 2. JWT 자체 유효성 검증
+            // JWT 자체 유효성 검증
             Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token);
             return true;
+
+        // 예외를 잡으면, 메시지 반환
         } catch (SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT Token", e);
+            log.info("유효하지 않은 토큰입니다.", e);
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT Token", e);
+            log.info("만료된 토큰입니다.", e);
         } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT Token", e);
+            log.info("지원하지 않는 토큰입니다.", e);
         } catch (IllegalArgumentException e) {
-            log.info("JWT claims string is empty.", e);
+            log.info("JWT claims가 비어있습니다.", e);
         }
-        return false;
+        return false; // 이후 false -> 유효하지 않은 토큰으로 판단
         }
 
 
-    // 토큰에서 사용자 ID 추출
+    /**
+     * JWT로 발급받은 엑세스 토큰에서 페이로드(Claims) 추출
+     * JwtProvider에서 이 메서드를 호출하여 Claims를 추출합니다.
+     * @param accessToken : 요청한 사용자의 엑세스 토큰
+     * @return : 토큰에서 페이로드를 추출해 반환
+     */
+    public Claims parseClaims(String accessToken) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key) // 여기서 this.key 사용
+                    .build()
+                    .parseClaimsJws(accessToken)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            // 만료된 경우에도 Claims는 가져올 수 있도록 처리합니다.
+            return e.getClaims();
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            log.warn("유효하지 않은 JWT 서명입니다: {}", e.getMessage());
+            throw new JwtException("유효하지 않은 JWT 서명입니다", e); // 적절한 커스텀 예외로 래핑
+        } catch (MalformedJwtException e) {
+            log.warn("잘못 구성된 JWT 토큰입니다: {}", e.getMessage());
+            throw new JwtException("잘못 구성된 JWT 토큰입니다:", e);
+        } catch (UnsupportedJwtException e) {
+            log.warn("지원되지 않는 JWT 토큰입니다: {}", e.getMessage());
+            throw new JwtException("지원되지 않는 JWT 토큰입니다", e);
+        } catch (IllegalArgumentException e) {
+            log.warn("JWT claims 문자열이 비어있습니다: {}", e.getMessage());
+            throw new JwtException("JWT claims 문자열이 비어있습니다", e);
+        }
+    }
+
+
+
+    /**
+     * 토큰에서 사용자 id를 추출
+     * @param token : 요청한 사용자의 토큰
+     * @return : 토큰을 파싱해서 추출한 사용자 아이디
+     */
     public Long getUserIdFromToken(String token) {
         return Long.parseLong(Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -137,16 +173,24 @@ public class JwtUtil {
                 .getSubject());
     }
 
-    // HTTP 요청 헤더에서 토큰 추출
-    public String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(JwtConstant.AUTHORIZATION_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstant.TOKEN_PREFIX)) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
+//    /**
+//     * 사용자 요청에서 토큰을 꺼내는 메서드
+//     * @param request : 사용자가 보낸 임의의 요청
+//     * @return : if문이 참일때 꺼내온 토큰을 반환, 아니면 null 반환
+//     */
+//    public String resolveToken(HttpServletRequest request) {
+//        String bearerToken = request.getHeader(JwtConstant.AUTHORIZATION_HEADER);
+//        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(JwtConstant.TOKEN_PREFIX)) {
+//            return bearerToken.substring(7); // 7번째(토큰 시작지점)부터 값을 가져옴, Bearer ~~
+//        }
+//        return null;
+//    }
 
-    // 토큰의 남은 유효 시간 계산
+    /**
+     * 토큰의 유효시간을 연산하는 메서드
+     * @param token : 토큰
+     * @return : (만료 시간 - 현재 시간)의 값
+     */
     public long getExpiration(String token) {
         Date expiration = Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -155,116 +199,12 @@ public class JwtUtil {
                 .getBody()
                 .getExpiration();
         long now = System.currentTimeMillis();
+
         return expiration.getTime() - now;
     }
 
 
 }
-
-
-
-//    // 토큰 유효 시간
-//    private static final long EXPIRATION_TIME = 1000 * 60 * 60; // 1시간
-//    // JWT 시그니쳐를 만들때 쓰는 비밀 키, 절대 노출하면 안됨!! .env파일로 분리해서 사용
-////    private static final String SECRET_KEY_STRING;
-//
-//    private Key key;
-//
-//
-//    /** @PostConstruct : 스프링에서 의존성 주입이 끝난 후 자동으로 실행되는 초기화 메서드 지정
-//     *  JwtUtil 빈이 생성된 후 init() 메서드가 실행됨
-//     */
-//
-//    @PostConstruct
-//    public void init() {
-//        System.out.println("SecretKey length: " + jwtProperties.getSecretKey().length());
-//
-//        // 시크릿키를 HMAC-SHA 알고리즘을 이용하여 변환한 값을 key에 할당
-//        this.key = Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes());
-//    }
-//
-//
-//    /**
-//     * 토큰 생성 메서드
-//     * @param loginId : 사용자의 로그인 아이디
-//     * @return
-//     */
-//    public String createToken(String loginId) {
-//        // 생성 시점
-//        Date now = new Date();
-//        // 만료 시점 = 생성 시점 + 유효시간
-//        Date expiration = new Date(now.getTime() + EXPIRATION_TIME);
-//
-//        // Jwts: JWT(JSON Web Token)을 다루기 위한 라이브러리인 JJWT가 제공하는 도우미 클래스
-//        // JWT을 만들고 파싱하는 작업등을 함
-//        return Jwts.builder()
-//                .setSubject(loginId)
-//                .setIssuedAt(now) // 토큰 발급 시간 설정
-//                .setExpiration(expiration) // 토큰 만료 시간 설정
-//                .signWith(key, SignatureAlgorithm.HS256) // 시그니쳐 제작 알고리즘 사용
-//                .compact();
-//    }
-//
-//    /**
-//     * JWT에서 로그인 아이디를 꺼내는 메서드
-//     * @param token
-//     * @return
-//     */
-//    public String extractLoginId(String token) {
-//        return Jwts.parserBuilder() // 파싱
-//                .setSigningKey(key) // 서명 검증용 키 설정
-//                .build() // 파서 객체 생성
-//                .parseClaimsJws(token) // 토큰 파싱, 서명 검증
-//                .getBody() // 토큰의 payload(Claims) 가져오기
-//                .getSubject(); // subject(=로그인 아이디) 추출
-//    }
-//
-//
-//    /**
-//     * 토큰이 유효한지 검증하는 메서드
-//     * @param token
-//     * @return
-//     */
-//    public boolean validateToken(String token) {
-//        try {
-//            Jwts.parserBuilder()
-//                    .setSigningKey(key) // 서명 키 설정
-//                    .build()
-//                    .parseClaimsJws(token); // 토큰 파싱 + 서명 검증
-//            return true; // 문제 없으면 true 반환
-//        } catch (Exception e) { // 예외 발생시 잡아서 false 반환
-//            return false;
-//        }
-//    }
-//
-//
-//    /** HTTP 요청 헤더에서 JWT 토큰을 꺼내는 메서드
-//     * @param request
-//     * @return
-//     */
-//    public String resolveToken(HttpServletRequest request) {
-//        String bearerToken = request.getHeader("Authorization");
-//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) { // 보통 Bearer<토큰> 형식임
-//            return bearerToken.substring(7); // "Bearer " 이후 토큰만 추출
-//        }
-//        return null;
-//    }
-//
-//
-//    /** JWT 토큰의 남은 유효 시간을 밀리초 단위로 반환하는 메서드
-//     * @param token
-//     * @return
-//     */
-//    public long getExpiration(String token) {
-//        Date expiration = Jwts.parserBuilder()
-//                .setSigningKey(key)
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody()
-//                .getExpiration();
-//        long now = System.currentTimeMillis();
-//        return expiration.getTime() - now;
-//    }
 
 
 
