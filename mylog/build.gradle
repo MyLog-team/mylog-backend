@@ -115,6 +115,7 @@ jacocoTestCoverageVerification {
 					minimum = 0.70
 				}
 			}
+
 		}
 	}
 }
