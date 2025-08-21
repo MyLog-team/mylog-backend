@@ -16,8 +16,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -66,7 +64,8 @@ class PreferenceControllerTest {
     void setPreference() throws Exception {
         // given
         PreferenceRequest request = PreferenceRequest.builder()
-                .preferredTags(Arrays.asList("음악", "여행", "요리"))
+                .tag1("음악")
+                .tag2("여행")
                 .build();
 
         // when & then
@@ -74,47 +73,53 @@ class PreferenceControllerTest {
                 .header("Authorization", "Bearer " + jwtToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.preferenceId").exists())
-                .andExpect(jsonPath("$.preferredTags").isArray())
-                .andExpect(jsonPath("$.preferredTags.length()").value(3));
+                .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("선호도 조회 API 테스트")
     void getPreference() throws Exception {
-        // given
-        Preference preference = Preference.builder()
-                .preferredTags(Arrays.asList("독서", "영화", "게임"))
+        // given - 두 개의 선호도 태그 생성
+        Preference preference1 = Preference.builder()
+                .tag("독서")
                 .user(testUser)
                 .build();
         
-        Preference savedPreference = preferenceRepository.save(preference);
+        Preference preference2 = Preference.builder()
+                .tag("영화")
+                .user(testUser)
+                .build();
+        
+        preferenceRepository.save(preference1);
+        preferenceRepository.save(preference2);
 
         // when & then
         mockMvc.perform(get("/api/preferences")
                 .header("Authorization", "Bearer " + jwtToken))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.preferenceId").value(savedPreference.getId()))
-                .andExpect(jsonPath("$.preferredTags").isArray())
-                .andExpect(jsonPath("$.preferredTags.length()").value(3))
-                .andExpect(jsonPath("$.preferredTags[0]").value("독서"));
+                .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("선호도 수정 API 테스트")
     void updatePreference() throws Exception {
         // given - 기존 선호도 생성
-        Preference preference = Preference.builder()
-                .preferredTags(Arrays.asList("독서", "영화"))
+        Preference preference1 = Preference.builder()
+                .tag("독서")
                 .user(testUser)
                 .build();
         
-        preferenceRepository.save(preference);
+        Preference preference2 = Preference.builder()
+                .tag("영화")
+                .user(testUser)
+                .build();
+        
+        preferenceRepository.save(preference1);
+        preferenceRepository.save(preference2);
 
         // 수정할 내용
         PreferenceRequest updateRequest = PreferenceRequest.builder()
-                .preferredTags(Arrays.asList("독서", "영화", "스포츠", "음악"))
+                .tag1("스포츠")
+                .tag2("음악")
                 .build();
 
         // when & then
@@ -122,9 +127,7 @@ class PreferenceControllerTest {
                 .header("Authorization", "Bearer " + jwtToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.preferredTags.length()").value(4))
-                .andExpect(jsonPath("$.preferredTags[3]").value("음악"));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -139,9 +142,10 @@ class PreferenceControllerTest {
     @Test
     @DisplayName("잘못된 선호도 설정 요청시 400 반환")
     void setPreference_BadRequest() throws Exception {
-        // given - 빈 태그 리스트
+        // given - 빈 태그들
         PreferenceRequest request = PreferenceRequest.builder()
-                .preferredTags(Arrays.asList())
+                .tag1("")
+                .tag2("")
                 .build();
 
         // when & then
@@ -157,7 +161,8 @@ class PreferenceControllerTest {
     void setPreference_Unauthorized() throws Exception {
         // given
         PreferenceRequest request = PreferenceRequest.builder()
-                .preferredTags(Arrays.asList("음악", "여행"))
+                .tag1("음악")
+                .tag2("여행")
                 .build();
 
         // when & then

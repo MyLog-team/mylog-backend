@@ -3,7 +3,6 @@ package mylog_backend.mylog.videoRecommend;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mylog_backend.mylog.auth.JWToken;
 import mylog_backend.mylog.auth.JwtUtil;
-import mylog_backend.mylog.diary.Feeling;
 import mylog_backend.mylog.user.User;
 import mylog_backend.mylog.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,16 +11,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -31,6 +32,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @ActiveProfiles("test")
 class VideoRecommendControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        @Primary
+        public VideoRecommendService videoRecommendService() {
+            return mock(VideoRecommendService.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,7 +54,7 @@ class VideoRecommendControllerTest {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @MockBean
+    @Autowired
     private VideoRecommendService videoRecommendService;
 
     private User testUser;
@@ -52,6 +62,9 @@ class VideoRecommendControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Mock 재설정
+        reset(videoRecommendService);
+        
         // 테스트용 유저 생성
         testUser = User.builder()
                 .loginId("testUser123")
@@ -71,18 +84,17 @@ class VideoRecommendControllerTest {
     void recommendVideos() throws Exception {
         // given
         MoodRequest request = MoodRequest.builder()
-                .mood(Feeling.HAPPY)
+                .mood("happy")
                 .build();
 
         VideoResponse mockResponse = VideoResponse.builder()
                 .videoId("test-video-id")
                 .title("Test Video")
-                .channelTitle("Test Channel")
                 .thumbnailUrl("https://test.com/thumbnail.jpg")
                 .build();
 
-        when(videoRecommendService.recommend(anyLong(), any(MoodRequest.class)))
-                .thenReturn(Arrays.asList(mockResponse));
+        when(videoRecommendService.recommend(anyLong(), any(String.class)))
+                .thenReturn(mockResponse);
 
         // when & then
         mockMvc.perform(post("/api/video-recommend")
@@ -90,19 +102,17 @@ class VideoRecommendControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].videoId").value("test-video-id"))
-                .andExpect(jsonPath("$[0].title").value("Test Video"))
-                .andExpect(jsonPath("$[0].channelTitle").value("Test Channel"));
+                .andExpect(jsonPath("$.videoId").value("test-video-id"))
+                .andExpect(jsonPath("$.title").value("Test Video"))
+                .andExpect(jsonPath("$.thumbnailUrl").value("https://test.com/thumbnail.jpg"));
     }
 
     @Test
     @DisplayName("잘못된 기분 상태로 추천 요청시 400 반환")
     void recommendVideos_BadRequest() throws Exception {
-        // given - 잘못된 요청 (null mood)
+        // given - 잘못된 요청 (빈 mood)
         MoodRequest request = MoodRequest.builder()
-                .mood(null)
+                .mood("")
                 .build();
 
         // when & then
@@ -118,10 +128,10 @@ class VideoRecommendControllerTest {
     void recommendVideos_InternalServerError() throws Exception {
         // given
         MoodRequest request = MoodRequest.builder()
-                .mood(Feeling.SAD)
+                .mood("sad")
                 .build();
 
-        when(videoRecommendService.recommend(anyLong(), any(MoodRequest.class)))
+        when(videoRecommendService.recommend(anyLong(), any(String.class)))
                 .thenThrow(new RuntimeException("YouTube API 오류"));
 
         // when & then
@@ -137,7 +147,7 @@ class VideoRecommendControllerTest {
     void recommendVideos_Unauthorized() throws Exception {
         // given
         MoodRequest request = MoodRequest.builder()
-                .mood(Feeling.HAPPY)
+                .mood("happy")
                 .build();
 
         // when & then
@@ -154,16 +164,15 @@ class VideoRecommendControllerTest {
         VideoResponse mockResponse = VideoResponse.builder()
                 .videoId("sad-video-id")
                 .title("Sad Video")
-                .channelTitle("Channel")
                 .thumbnailUrl("https://test.com/sad.jpg")
                 .build();
 
-        when(videoRecommendService.recommend(anyLong(), any(MoodRequest.class)))
-                .thenReturn(Arrays.asList(mockResponse));
+        when(videoRecommendService.recommend(anyLong(), any(String.class)))
+                .thenReturn(mockResponse);
 
         // Test SAD mood
         MoodRequest sadRequest = MoodRequest.builder()
-                .mood(Feeling.SAD)
+                .mood("sad")
                 .build();
 
         mockMvc.perform(post("/api/video-recommend")
@@ -171,11 +180,11 @@ class VideoRecommendControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(sadRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$.videoId").value("sad-video-id"));
 
-        // Test NOT_BAD mood
+        // Test calm mood
         MoodRequest normalRequest = MoodRequest.builder()
-                .mood(Feeling.NOT_BAD)
+                .mood("calm")
                 .build();
 
         mockMvc.perform(post("/api/video-recommend")
@@ -183,6 +192,6 @@ class VideoRecommendControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(normalRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$.videoId").value("sad-video-id"));
     }
 }
