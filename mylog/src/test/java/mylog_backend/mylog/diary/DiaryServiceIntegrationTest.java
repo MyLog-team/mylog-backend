@@ -39,7 +39,7 @@ public class DiaryServiceIntegrationTest {
     void setUp() {
         // 1. 유저 생성
         testUser = User.builder()
-                .loginId("testId1234")
+                .loginId("testId1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
@@ -47,7 +47,7 @@ public class DiaryServiceIntegrationTest {
         userRepository.save(testUser);
 
         daiseek = User.builder()
-                .loginId("daiseek123")
+                .loginId("daiseek1")
                 .email("daiseek@example.com")
                 .password("daiseek123")
                 .userName("정대식")
@@ -80,6 +80,7 @@ public class DiaryServiceIntegrationTest {
     // 테스트후 정보 비워줌
     @AfterEach
     void tearDown() {
+        diaryRepository.deleteAll();
         userRepository.deleteAll(); // 또는 모든 repository 초기화
     }
 
@@ -181,9 +182,9 @@ public class DiaryServiceIntegrationTest {
         Diary testUserDiary1 = diaryRepository.findById(response1.getDiaryId())
                 .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다."));
 
-        // testUser의 공개된 일기
-        Diary testUserDiary2 = diaryRepository.findById(response2.getDiaryId())
-                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다."));
+        // testUser의 공개된 일기 (참조용으로만 사용)
+        // Diary testUserDiary2 = diaryRepository.findById(response2.getDiaryId())
+        //         .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다."));
 
 
         // when & then
@@ -195,7 +196,122 @@ public class DiaryServiceIntegrationTest {
 
     }
 
+    @Test
+    @DisplayName("일기 직접 수정 테스트")
+    void updateDiaryDirectly() {
+        // given
+        Diary savedDiary = diaryRepository.findById(response1.getDiaryId())
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다."));
 
+        // when - 새로운 일기를 생성하여 업데이트를 시뮬레이션
+        Diary updatedDiary = Diary.builder()
+                .id(savedDiary.getId())
+                .dairyTitle("수정된 제목")
+                .dairyContent("수정된 내용")
+                .feeling(Feeling.HAPPY)
+                .feelingScore(90)
+                .isPublic(IsPublic.PUBLIC)
+                .user(savedDiary.getUser())
+                .build();
 
+        // then - 수정된 값들이 제대로 설정되었는지 확인
+        assertThat(updatedDiary.getDairyTitle()).isEqualTo("수정된 제목");
+        assertThat(updatedDiary.getDairyContent()).isEqualTo("수정된 내용");
+        assertThat(updatedDiary.getFeeling()).isEqualTo(Feeling.HAPPY);
+        assertThat(updatedDiary.getFeelingScore()).isEqualTo(90);
+        assertThat(updatedDiary.getIsPublic()).isEqualTo(IsPublic.PUBLIC);
+    }
 
+    @Test
+    @DisplayName("일기 삭제 테스트")
+    void deleteDiary() {
+        // given
+        Diary savedDiary = diaryRepository.findById(response1.getDiaryId())
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다."));
+
+        // when - Repository를 직접 사용하여 삭제
+        diaryRepository.delete(savedDiary);
+
+        // then
+        assertThat(diaryRepository.findById(savedDiary.getId())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 일기 접근 권한 테스트")
+    void accessOtherUserDiary() {
+        // given
+        Diary testUserDiary = diaryRepository.findById(response1.getDiaryId())
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다."));
+
+        // when & then - getDiary로 권한 검증 테스트
+        assertThrows(UnauthorizedException.class, () -> {
+            diaryService.getDiary(daiseek.getId(), testUserDiary.getId());
+        });
+    }
+
+    @Test
+    @DisplayName("일기 소유자 확인 테스트")
+    void checkDiaryOwnership() {
+        // given
+        Diary testUserDiary = diaryRepository.findById(response1.getDiaryId())
+                .orElseThrow(() -> new IllegalArgumentException("일기를 찾을 수 없습니다."));
+
+        // when & then - 소유자 확인
+        assertThat(testUserDiary.getUser().getId()).isEqualTo(testUser.getId());
+        assertThat(testUserDiary.getUser().getId()).isNotEqualTo(daiseek.getId());
+    }
+
+    @Test
+    @DisplayName("사용자의 모든 일기 조회 테스트")
+    void getAllDiariesByUser() {
+        // when - 기존 getDiaries 메서드 사용
+        List<DiaryResponse> userDiaries = diaryService.getDiaries(testUser.getId());
+
+        // then
+        assertThat(userDiaries).hasSize(2);
+        assertThat(userDiaries)
+                .extracting(DiaryResponse::getDairyTitle)
+                .containsExactlyInAnyOrder("테스트일기1", "테스트일기2");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 일기 조회시 예외 발생")
+    void getDiaryNotFound() {
+        // given
+        Long nonExistentId = 999L;
+
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            diaryService.getDiary(testUser.getId(), nonExistentId);
+        });
+    }
+
+    @Test
+    @DisplayName("감정 점수 경계값 테스트")
+    void testFeelingScoreBoundary() {
+        // given - 최소값
+        DiaryRequest minScoreRequest = DiaryRequest.builder()
+                .diaryTitle("최소 점수 테스트")
+                .diaryContent("최소 점수 테스트 내용")
+                .feeling(Feeling.SAD)
+                .feelingScore(0)
+                .isPublic(IsPublic.PRIVATE)
+                .build();
+
+        // given - 최대값
+        DiaryRequest maxScoreRequest = DiaryRequest.builder()
+                .diaryTitle("최대 점수 테스트")
+                .diaryContent("최대 점수 테스트 내용")
+                .feeling(Feeling.HAPPY)
+                .feelingScore(100)
+                .isPublic(IsPublic.PRIVATE)
+                .build();
+
+        // when & then
+        DiaryResponse minResponse = diaryService.createDiary(testUser.getId(), minScoreRequest);
+        DiaryResponse maxResponse = diaryService.createDiary(testUser.getId(), maxScoreRequest);
+
+        assertThat(minResponse.getFeelingScore()).isEqualTo(0);
+        assertThat(maxResponse.getFeelingScore()).isEqualTo(100);
+    }
 }

@@ -1,9 +1,5 @@
-package mylog_backend.mylog.prerence;
+package mylog_backend.mylog.preference;
 
-import mylog_backend.mylog.preference.Preference;
-import mylog_backend.mylog.preference.PreferenceRepository;
-import mylog_backend.mylog.preference.PreferenceRequest;
-import mylog_backend.mylog.preference.PreferenceService;
 import mylog_backend.mylog.user.User;
 import mylog_backend.mylog.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
