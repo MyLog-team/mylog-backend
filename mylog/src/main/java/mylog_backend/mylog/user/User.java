@@ -22,10 +22,10 @@ public class User {
     @Id
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(10)", unique = true)
+    @Column(nullable = false, columnDefinition = "VARCHAR(50)", unique = true)
     private String loginId;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(10)", unique = true)
+    @Column(nullable = false, columnDefinition = "VARCHAR(50)", unique = true)
     private String userName;
 
     @Column(nullable = false, columnDefinition = "VARCHAR(100)")
@@ -67,6 +67,7 @@ public class User {
      * 회원 : 메모 = 1:N
      */
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Memo> memos = new ArrayList<>();
 
     // 메모 작성 메서드
@@ -98,6 +99,7 @@ public class User {
      * 회원 : 일기 = 1:N
      */
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Diary> diaries = new ArrayList<>();
     // 일기 생성 메서드
     public void addDiary(Diary diary) {

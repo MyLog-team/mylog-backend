@@ -16,14 +16,14 @@ class UserTest {
     void createUser() {
         // given & when
         User user = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
                 .build();
 
         // then
-        assertThat(user.getLoginId()).isEqualTo("testUser123");
+        assertThat(user.getLoginId()).isEqualTo("testUser1");
         assertThat(user.getEmail()).isEqualTo("test@example.com");
         assertThat(user.getPassword()).isEqualTo("encoded-password");
         assertThat(user.getUserName()).isEqualTo("테스트유저");
@@ -36,7 +36,7 @@ class UserTest {
     void addMemoToUser() {
         // given
         User user = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
@@ -60,7 +60,7 @@ class UserTest {
     void addDiaryToUser() {
         // given
         User user = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
@@ -88,14 +88,14 @@ class UserTest {
     void testEqualsAndHashCode() {
         // given
         User user1 = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
                 .build();
 
         User user2 = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
@@ -119,7 +119,7 @@ class UserTest {
     void testToString() {
         // given
         User user = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
@@ -129,7 +129,7 @@ class UserTest {
         String toString = user.toString();
 
         // then
-        assertThat(toString).contains("testUser123");
+        assertThat(toString).contains("testUser1");
         assertThat(toString).contains("test@example.com");
         assertThat(toString).contains("테스트유저");
     }

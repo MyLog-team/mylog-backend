@@ -13,7 +13,7 @@ class DiaryTest {
     void createDiary() {
         // given
         User user = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
@@ -43,7 +43,7 @@ class DiaryTest {
     void createDiaryWithBuilder() {
         // given
         User user = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
@@ -104,7 +104,7 @@ class DiaryTest {
     void testEqualsAndHashCode() {
         // given
         User user = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
@@ -148,7 +148,7 @@ class DiaryTest {
     void testToString() {
         // given
         User user = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")

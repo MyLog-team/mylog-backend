@@ -39,7 +39,7 @@ public class DiaryServiceIntegrationTest {
     void setUp() {
         // 1. 유저 생성
         testUser = User.builder()
-                .loginId("testId1234")
+                .loginId("testId1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
@@ -47,7 +47,7 @@ public class DiaryServiceIntegrationTest {
         userRepository.save(testUser);
 
         daiseek = User.builder()
-                .loginId("daiseek123")
+                .loginId("daiseek1")
                 .email("daiseek@example.com")
                 .password("daiseek123")
                 .userName("정대식")

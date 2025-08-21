@@ -67,7 +67,7 @@ class VideoRecommendControllerTest {
         
         // 테스트용 유저 생성
         testUser = User.builder()
-                .loginId("testUser123")
+                .loginId("testUser1")
                 .email("test@example.com")
                 .password("encoded-password")
                 .userName("테스트유저")
