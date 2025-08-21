@@ -7,6 +7,8 @@ import lombok.*;
 import mylog_backend.mylog.common.domain.DateEntity;
 import mylog_backend.mylog.user.User;
 
+import java.time.LocalDateTime;
+
 @Entity // JPA 사용
 @Getter
 @Builder // 생성자에 빌더패턴 적용
@@ -41,8 +43,20 @@ public class Diary extends DateEntity {
     @Max(value = 100, message = "점수는 100 이하여야 합니다.")
     private Integer feelingScore = 0; // 감정과 감정점수를 입력하지 않았을때 기본값은 0
 
+    @Column(nullable = true)
+    @Builder.Default
+    private LocalDateTime remindAt = null;
+
+    @Column(nullable = true)
+    @Builder.Default
+    private Boolean isReminded = false;
 
     // created_at, modified_at 필드는 DateEntity에 존재하고, Auditing 기능을 통해 관리
+
+
+    // 일기 알람을 띄운 후 isReminded 값을 바꾸는 메서드
+    public void markAsReminded() {this.isReminded = true;}
+
 
     /**
      * Diary 생성자
@@ -51,18 +65,22 @@ public class Diary extends DateEntity {
      * @param feeling : 감정 상태
      * @param feelingScore : 감정 점수
      * @param isPublic : 공개 여부
+     * @param remindAt : 알람을 띄울 날짜, 시간
+     * @param isReminded : 알람을 띄웠는지 여부
      */
-    public Diary(String dairyTitle, String dairyContent, Feeling feeling, Integer feelingScore, IsPublic isPublic) {
+    public Diary(String dairyTitle, String dairyContent, Feeling feeling, Integer feelingScore, IsPublic isPublic, LocalDateTime remindAt, Boolean isReminded) {
         this.dairyTitle = dairyTitle;
         this.dairyContent = dairyContent;
         this.feeling = feeling;
         this.feelingScore = feelingScore;
         this.isPublic = isPublic;
+        this.remindAt = remindAt;
+        this.isReminded = false;
     }
 
 
     /**
-     * 사용자 <-> 메모
+     * 사용자 <-> 일기
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -73,6 +91,23 @@ public class Diary extends DateEntity {
         this.user = user;
     }
 
+
+    /**
+     * 일기 알람 설정 메서드
+     * @param remindTime : 알람창을 띄우는 날짜, 시간
+     */
+    public void setRemindAt(LocalDateTime remindTime) {
+        this.remindAt = remindTime;
+    }
+
+
+    /**
+     * 일기 알람이 발송되면 호출하여 실행
+     * @param isReminded : 알람 발송 여부 -> 발송시 true로 전환
+     */
+    public void setIsReminded(Boolean isReminded) {
+        this.isReminded = isReminded;
+    }
 
 
 }

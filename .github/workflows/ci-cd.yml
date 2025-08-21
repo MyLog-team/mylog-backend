@@ -39,7 +39,7 @@ jobs:
           distribution: "temurin"
 
       # 3. Gradle 빌드 (테스트 포함 -> 테스트가 동작하는지 확인하기 위함)
-      - name: Build my project with Gradle
+      - name: Build my project with Gradle (with coverage)
         working-directory: ./mylog
         env: # 환경 변수 설정
           JWT_SECRET: ${{ secrets.JWT_SECRET }} # JWT secret 키
@@ -48,31 +48,57 @@ jobs:
 
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          ./gradlew build jacocoTestReport jacocoTestCoverageVerification
+
+      # 커버리지 리포트 업로드 (HTML 아티팩트)
+      - name: Upload JaCoCo coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-report
+          path: mylog/build/reports/jacoco/test/html
+          if-no-files-found: warn
+
+      # 테스트 결과 리포트 (JUnit HTML) 업로드
+      - name: Upload JUnit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-test-results
+          path: |
+            mylog/build/reports/tests/test
+          if-no-files-found: warn
+
+      # 커버리지 XML을 PR 코멘트/체크로 노출하고 싶다면 아래 주석 해제 (Codecov 또는 Jacoco Reporter 활용)
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     files: mylog/build/reports/jacoco/test/jacocoTestReport.xml
+      #     fail_ci_if_error: false
 
       # redis 디버깅 로그 -> 주석처리, 필요시 사용
 
       # 도커 정보 확인
-#      - name: Check Docker info
-#        run: docker info
-#
-#      # 현재 실행 중 프로세스 리스트 확인 (redis-server 포함 여부 점검용)
-#      - name: List running processes
-#        run: ps aux | grep redis
-#
-#      # 포트 6379 사용 중인지 확인
-#      - name: Check port 6379 usage
-#        run: sudo netstat -tulnp | grep 6379 || echo "Port 6379 not in use"
-#
-#      # redis-server 버전 확인 (실행 가능 여부 체크)
-#      - name: Check redis-server version
-#        run: redis-server --version || echo "redis-server not found or cannot execute"
-#
-#      - name: List Docker containers
-#        run: docker ps -a
-#
-#      - name: Inspect Redis container
-#        run: docker inspect redis
+      #      - name: Check Docker info
+      #        run: docker info
+      #
+      #      # 현재 실행 중 프로세스 리스트 확인 (redis-server 포함 여부 점검용)
+      #      - name: List running processes
+      #        run: ps aux | grep redis
+      #
+      #      # 포트 6379 사용 중인지 확인
+      #      - name: Check port 6379 usage
+      #        run: sudo netstat -tulnp | grep 6379 || echo "Port 6379 not in use"
+      #
+      #      # redis-server 버전 확인 (실행 가능 여부 체크)
+      #      - name: Check redis-server version
+      #        run: redis-server --version || echo "redis-server not found or cannot execute"
+      #
+      #      - name: List Docker containers
+      #        run: docker ps -a
+      #
+      #      - name: Inspect Redis container
+      #        run: docker inspect redis
 
       # 4. Docker Hub 로그인 -> 프로젝트 이미지를 올리기 위함
       - name: Login to Docker Hub
@@ -80,7 +106,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }} # ${{}}로 둘러쌓인 값은 Github Secrets에서 값을 저장후 할당함
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
 
       # 5. 머지되는 PR 정보 로깅
       - name: Get Merged PR Info
@@ -110,7 +135,6 @@ jobs:
           echo "  - PR Title   : ${{ steps.get_pr_info.outputs.PR_TITLE }}"
           echo "=========================================================="
 
-
       # 6. Docker 이미지 빌드 및 푸시
       - name: Build and push mylog Docker image
         run: |
@@ -121,10 +145,7 @@ jobs:
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:$IMAGE_TAG
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mylog:latest
 
-
       # 모니터링 도구 관련 설정 필요
-
-
 
       #  EC2 서버에 접속하여 배포 -> 찐 배포시 봉인해제
 
